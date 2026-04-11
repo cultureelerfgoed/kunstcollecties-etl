@@ -3,7 +3,6 @@ import xml.etree.ElementTree as ET
 import adlib_xpaths as xpath
 import adlib_tags as tags
 import lod_mapper as lmap
-from adlibxml_to_schemaorg_mapping import MAPPING
 
 logger = logging.getLogger(__name__)
 path = 'data/output/rubenpriref24099.adlib.xml'
@@ -43,25 +42,6 @@ def parse_tree(tree: ET) -> dict[str]:
     return dict(filter(lambda item: item[1] is not None, parsed_record.items()))
 
 def parse_path(path: str) -> dict[str]:
-    etree = ET.parse('data/output/rubenpriref24099.adlib.xml')    
+    etree = ET.parse(path)    
     parsed_record = parse_tree(etree)
     return parsed_record
-
-def main():
-    """ main runner for workflow """
-    logging.basicConfig(
-        format='%(asctime)s %(levelname)-8s %(message)s',
-        level=logging.INFO,
-        datefmt='%Y-%m-%d %H:%M:%S')
-
-    etree = ET.parse('data/output/rubenpriref24099.adlib.xml')    
-    parsed_record = parse_tree(etree)
-    lmap.apply_mapping(parsed_record, MAPPING)
-
-    etree = ET.parse('data/output/rubenpriref158491.adlib.xml')    
-    parsed_record = parse_tree(etree)
-    lmap.apply_mapping(parsed_record, MAPPING)
-
-
-if __name__ == '__main__':
-    main()
