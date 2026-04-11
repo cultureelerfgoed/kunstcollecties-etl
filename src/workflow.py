@@ -1,7 +1,7 @@
+import os
 import logging
 from rdflib import Graph
-import adlib_xpaths as xpath
-import adlib_tags as tags
+from rdflib.namespace import SDO, RDF
 import lod_mapper as lmap
 from adlibxml_to_schemaorg_mapping import BASIC_MAPPING, CREATOR_MAPPING
 import adlib_transformer
@@ -19,17 +19,21 @@ def main():
     
     rgraph = Graph()
 
-    for path in ['data/output/rubenpriref24099.adlib.xml',
-                 'data/output/rubenpriref158492.adlib.xml',
-                 'data/output/rubenpriref158419.adlib.xml',
-                 'data/output/rubenpriref158420.adlib.xml',
-                 'data/output/rubenpriref158421.adlib.xml',
-                 'data/output/rubenpriref158422.adlib.xml']:
-        parsed_record = adlib_transformer.parse_path(path)
-        rgraph = rgraph + lmap.apply_mapping(parsed_record, BASIC_MAPPING)
-        rgraph = rgraph + lmap.make_creator(parsed_record, CREATOR_MAPPING)
+    dir_path = 'data/output/'
+    limit = 100
 
-    logger.info(rgraph.print())
+    for index, filename in enumerate(os.listdir(dir_path)):
+        if not filename.endswith('.xml'): continue
+        path = os.path.join(dir_path, filename)
+        parsed_record = adlib_transformer.parse_path(path)
+        basic_attr = lmap.apply_mapping(parsed_record, BASIC_MAPPING)
+        cw_node = basic_attr.value(None, RDF.type, SDO.CreativeWork, any=False)
+        rgraph = rgraph + lmap.make_creator(parsed_record, CREATOR_MAPPING, cw_node)
+        
+        if index >= limit:
+            break
+
+    rgraph.print()
 
 
 if __name__ == '__main__':
