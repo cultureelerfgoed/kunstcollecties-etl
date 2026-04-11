@@ -7,6 +7,19 @@ ASSOCIATION_SUBJECT = './/association.subject'
 ASSOCIATION_SUBJECT_TYPE = './/association.subject.type'
 ASSOCIATION_SUBJECT_TYPE_VALUE = './/association.subject.type/value'
 
+DIMENSION = './/Dimension'
+DIMENSION_FREE = './/dimension.free'
+DIMENSION_PART = './/dimension.part'
+DIMENSION_TYPE = './/dimension.type'
+DIMENSION_UNIT = './/dimension.unit'
+DIMENSION_VALUE = './/dimension.value'
+
+CONDITION = './/Condition'
+CONDITION_TEXT = './/condition'
+CONDITION_CHECK_NAME = './/condition.check.name'
+CONDITION_DATE = './/condition.date'
+CONDITION_NOTES = './/condition.notes'
+
 VALUE = './/value'
 
 DESCRIPTION = './/Description'
