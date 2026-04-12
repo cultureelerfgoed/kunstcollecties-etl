@@ -2,7 +2,6 @@ import logging
 import xml.etree.ElementTree as ET
 import adlib_xpaths as xpath
 import adlib_tags as tags
-import lod_mapper as lmap
 import uuid
 from rdflib import Graph
 from rdflib import Graph, Literal, URIRef
@@ -36,16 +35,19 @@ def parse_tree_to_graph(tree: ET) -> Graph:
             sdo_record_graph.add((cwork_node, ref, Literal(item_text)))
 
     sdo_creator_node = URIRef(BASE_URI+'Thing/'+str(uuid.uuid4()))
-    sdo_record_graph.add((sdo_creator_node, RDF.type, SDO.Thing))
     sdo_record_graph.add((cwork_node, SDO.creator, sdo_creator_node))
-
+    
+    type = SDO.Organization
     for key, ref in CREATOR_MAPPING.items():
         item_text = get_tree_text_from_xpath_safe(tree, key)
         if item_text:
             if key == xpath.RKDARTISTS:
                 sdo_record_graph.add((sdo_creator_node, ref, URIRef(item_text)))
+                type = SDO.Person
             else:
-                sdo_record_graph.add((cwork_node, ref, Literal(item_text)))
+                sdo_record_graph.add((sdo_creator_node, ref, Literal(item_text)))
+
+    sdo_record_graph.add((sdo_creator_node, RDF.type, type))
 
     for index, dimension in enumerate(tree.findall(xpath.DIMENSION)):
         qv_node = URIRef(BASE_URI+'QuantitativeValue/'+str(uuid.uuid4()))
