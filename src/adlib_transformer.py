@@ -3,45 +3,72 @@ import xml.etree.ElementTree as ET
 import adlib_xpaths as xpath
 import adlib_tags as tags
 import lod_mapper as lmap
+import uuid
+from rdflib import Graph
+from rdflib import Graph, Literal, URIRef
+from rdflib.namespace import RDF, SDO
+from adlibxml_to_schemaorg_mapping import BASIC_MAPPING, CREATOR_MAPPING, DIMENSION_MAPPING
 
 logger = logging.getLogger(__name__)
-path = 'data/output/rubenpriref24099.adlib.xml'
+BASE_URI = 'https://linkeddata.cultureelerfgoed.nl/data/'
+
 
 # https://adlibug.nl/2014/09/17/how-to-create-a-full-list-of-tags-using-xml-and-xsl/
 
-def get_text_from_xpath_safe(tree: ET, target_xpath: str) -> str:
+def get_tree_text_from_xpath_safe(tree: ET, target_xpath: str) -> str:
     t_elem = tree.find(target_xpath)
     if t_elem is not None and t_elem.text:
         return t_elem.text
 
-def parse_tree(tree: ET) -> dict[str]:
-    parsed_record = {}
-    
-    for index, asubj in enumerate(tree.findall(xpath.ASSOCIATED_SUBJECT)):
-        parsed_record[xpath.ASSOCIATION_SUBJECT + '/' + str(index)] = asubj.find(tags.ASSOCIATION_SUBJECT).text
-        parsed_record[xpath.ASSOCIATION_SUBJECT_TYPE + '/' + str(index)] = asubj.find(tags.ASSOCIATION_SUBJECT_TYPE)[0].text
+def get_element_text_from_xpath_safe(element: ET.Element, target_xpath: str) -> str:
+    t_elem = element.find(target_xpath)
+    if t_elem is not None and t_elem.text:
+        return t_elem.text
 
-    parsed_record[xpath.DESCRIPTION_TEXT] = get_text_from_xpath_safe(tree, xpath.DESCRIPTION_TEXT)
-    parsed_record[xpath.INSCRIPTION_DESCRIPTION] = get_text_from_xpath_safe(tree, xpath.INSCRIPTION_DESCRIPTION)
-    parsed_record[xpath.MATERIAL_ITEM] = get_text_from_xpath_safe(tree, xpath.MATERIAL_ITEM)
-    parsed_record[xpath.OBJECT_NAME_ITEM] = get_text_from_xpath_safe(tree, xpath.OBJECT_NAME_ITEM)
-    parsed_record[xpath.CREATOR_NAME] = get_text_from_xpath_safe(tree, xpath.CREATOR_NAME)
-    parsed_record[xpath.CREATOR_DATE_OF_BIRTH] = get_text_from_xpath_safe(tree, xpath.CREATOR_DATE_OF_BIRTH)
-    parsed_record[xpath.CREATOR_DATE_OF_DEATH] = get_text_from_xpath_safe(tree, xpath.CREATOR_DATE_OF_DEATH)
-    parsed_record[xpath.PRODUCTION_DATE_END] = get_text_from_xpath_safe(tree, xpath.PRODUCTION_DATE_END)
-    parsed_record[xpath.PRODUCTION_DATE_START] = get_text_from_xpath_safe(tree, xpath.PRODUCTION_DATE_START)
+def parse_tree_to_graph(tree: ET) -> Graph:
+    sdo_record_graph = Graph()
+    cwork_node = URIRef(BASE_URI+'CreativeWork/'+str(uuid.uuid4()))
+    sdo_record_graph.add((cwork_node, RDF.type, SDO.CreativeWork))
 
-    for index, rr in enumerate(tree.findall(xpath.REPRODUCTION_REFERENCE)):
-        parsed_record[xpath.REPRODUCTION_REFERENCE + '/' + str(index)] = rr.text  
-    
-    parsed_record[xpath.RIGHTS_ASSIGNED_VALUE] = get_text_from_xpath_safe(tree, xpath.RIGHTS_ASSIGNED_VALUE)
-    parsed_record[xpath.RIGHTS_HOLDER] = get_text_from_xpath_safe(tree, xpath.RIGHTS_HOLDER)
-    parsed_record[xpath.RIGHTS_NOTES] = get_text_from_xpath_safe(tree, xpath.RIGHTS_NOTES)
-    parsed_record[xpath.RIGHTS_TYPE] = get_text_from_xpath_safe(tree, xpath.RIGHTS_TYPE)
+    for key, ref in BASIC_MAPPING.items():
+        item_text = get_tree_text_from_xpath_safe(tree, key)
+        if item_text:
+            sdo_record_graph.add((cwork_node, ref, Literal(item_text)))
 
-    return dict(filter(lambda item: item[1] is not None, parsed_record.items()))
+    sdo_creator_node = URIRef(BASE_URI+'Thing/'+str(uuid.uuid4()))
+    sdo_record_graph.add((sdo_creator_node, RDF.type, SDO.Thing))
+    sdo_record_graph.add((cwork_node, SDO.creator, sdo_creator_node))
 
-def parse_path(path: str) -> dict[str]:
-    etree = ET.parse(path)    
-    parsed_record = parse_tree(etree)
-    return parsed_record
+    for key, ref in CREATOR_MAPPING.items():
+        item_text = get_tree_text_from_xpath_safe(tree, key)
+        if item_text:
+            if key == xpath.RKDARTISTS:
+                sdo_record_graph.add((sdo_creator_node, ref, URIRef(item_text)))
+            else:
+                sdo_record_graph.add((cwork_node, ref, Literal(item_text)))
+
+    for index, dimension in enumerate(tree.findall(xpath.DIMENSION)):
+        qv_node = URIRef(BASE_URI+'QuantitativeValue/'+str(uuid.uuid4()))
+        sdo_record_graph.add((qv_node, RDF.type, SDO.QuantitativeValue))
+
+        d_unit = next(dimension.iterfind(tags.DIMENSION_UNIT))
+        if d_unit.text:
+            sdo_record_graph.add((qv_node, DIMENSION_MAPPING[xpath.DIMENSION_UNIT], Literal(d_unit.text)))
+        
+        d_val = next(dimension.iterfind(tags.DIMENSION_VALUE))
+        if d_val.text:
+            sdo_record_graph.add((qv_node, DIMENSION_MAPPING[xpath.DIMENSION_VALUE], Literal(d_val.text)))
+        
+        d_type = next(dimension.iterfind(tags.DIMENSION_TYPE))
+        if d_type.text == 'hoogte':
+            sdo_record_graph.add((cwork_node, SDO.height, qv_node))
+        elif d_type.text == 'breedte':
+            sdo_record_graph.add((cwork_node, SDO.width, qv_node))
+        elif d_type.text == 'diepte':
+            sdo_record_graph.add((cwork_node, SDO.depth, qv_node))
+
+    return sdo_record_graph
+
+def parse_path_to_graph(path: str) -> Graph:
+    graph = ET.parse(path)    
+    return parse_tree_to_graph(graph)

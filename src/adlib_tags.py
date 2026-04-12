@@ -54,6 +54,13 @@ OBJECT_NUMBER = "object_number"
 PART = "part"
 PRIREF = "priref"
 
+DIMENSION = 'Dimension'
+DIMENSION_FREE = 'dimension.free'
+DIMENSION_PART = 'dimension.part'
+DIMENSION_TYPE = 'dimension.type'
+DIMENSION_UNIT = 'dimension.unit'
+DIMENSION_VALUE = 'dimension.value'
+
 RECORD_TYPE = "record_type"
 
 USER_CODE = "user_code"
