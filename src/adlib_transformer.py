@@ -14,6 +14,11 @@ BASE_URI = 'https://linkeddata.cultureelerfgoed.nl/data/'
 
 # https://adlibug.nl/2014/09/17/how-to-create-a-full-list-of-tags-using-xml-and-xsl/
 
+def get_text(element: ET.Element, target_xpath:str) -> str:
+    target = next(element.iterfind(target_xpath))
+    if target != None and target.text and target.text.strip() != '':
+        return target.text
+
 def get_tree_text_from_xpath_safe(tree: ET, target_xpath: str) -> str:
     t_elem = tree.find(target_xpath)
     if t_elem is not None and t_elem.text:
@@ -26,13 +31,13 @@ def get_element_text_from_xpath_safe(element: ET.Element, target_xpath: str) -> 
 
 def parse_tree_to_graph(tree: ET) -> Graph:
     sdo_record_graph = Graph()
-    cwork_node = URIRef(BASE_URI+'CreativeWork/'+str(uuid.uuid4()))
+    cwork_node = URIRef(BASE_URI+'CreativeWork/'+get_tree_text_from_xpath_safe(tree, xpath.PRIREF))
     sdo_record_graph.add((cwork_node, RDF.type, SDO.CreativeWork))
 
     for key, ref in BASIC_MAPPING.items():
         item_text = get_tree_text_from_xpath_safe(tree, key)
         if item_text:
-            sdo_record_graph.add((cwork_node, ref, Literal(item_text)))
+            sdo_record_graph.add((cwork_node, ref, Literal(item_text, lang='nl')))
 
     sdo_creator_node = URIRef(BASE_URI+'Thing/'+str(uuid.uuid4()))
     
@@ -62,17 +67,21 @@ def parse_tree_to_graph(tree: ET) -> Graph:
         
         d_type = next(dimension.iterfind(tags.DIMENSION_TYPE))
         if d_type.text == 'hoogte':
+            sdo_record_graph.add((qv_node, SDO.valueReference, Literal('hoogte', lang='nl')))
             sdo_record_graph.add((cwork_node, SDO.height, qv_node))
         elif d_type.text == 'breedte':
+            sdo_record_graph.add((qv_node, SDO.valueReference, Literal('breedte', lang='nl')))
             sdo_record_graph.add((cwork_node, SDO.width, qv_node))
         elif d_type.text == 'diepte':
+            sdo_record_graph.add((qv_node, SDO.valueReference, Literal('diepte', lang='nl')))
             sdo_record_graph.add((cwork_node, SDO.depth, qv_node))
 
-    for index, rholder in enumerate(tree.findall(xpath.RIGHTS_HOLDER)):
-        sdo_rholder_node = URIRef(BASE_URI+'Person/'+str(uuid.uuid4()))
-        sdo_record_graph.add((sdo_rholder_node, RDF.type, SDO.Person))
-        sdo_record_graph.add((sdo_rholder_node, SDO.name, Literal(rholder)))
-        sdo_record_graph.add((cwork_node, SDO.copyrightHolder, sdo_rholder_node))
+        rholder_text = get_tree_text_from_xpath_safe(tree, xpath.RIGHTS_HOLDER)
+        if rholder_text:
+            sdo_rholder_node = URIRef(BASE_URI+'Person/'+str(uuid.uuid4()))
+            sdo_record_graph.add((sdo_rholder_node, RDF.type, SDO.Person))
+            sdo_record_graph.add((sdo_rholder_node, SDO.name, Literal(rholder_text)))
+            sdo_record_graph.add((cwork_node, SDO.copyrightHolder, sdo_rholder_node))
 
     return sdo_record_graph
 
