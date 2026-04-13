@@ -2,11 +2,9 @@ import os
 import logging
 import datetime
 from rdflib import Graph
-import adlib_transformer
 import adlib_harvester
 
 logger = logging.getLogger(__name__)
-path = 'data/output/'
 
 GRAPH_ID = os.getenv('GRAPH_ID', 'default')
 OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
@@ -27,7 +25,7 @@ def main():
     except OSError as oe:
         logger.warning('Failed to write to file: %s', oe)
     except TypeError as te:
-        logger.warning('Failed to find an element: %s', te)
+        logger.warning('TypeError: %s', te)
     finally:
         b = datetime.datetime.now().replace(microsecond=0)
         logger.info('Finished after %s', str(b-a))
