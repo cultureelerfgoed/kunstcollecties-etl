@@ -8,6 +8,10 @@ BASIC_MAPPING = {
     adlib_xpaths.DIMENSION_FREE: SDO.size,
 }
 
+RIGHTS_MAPPING = {
+    adlib_xpaths.RIGHTS_HOLDER: SDO.copyrightHolder,
+}
+
 CREATOR_MAPPING = {
     adlib_xpaths.CREATOR_NAME: SDO.name, 
     adlib_xpaths.RKDARTISTS: SDO.sameAs, 
