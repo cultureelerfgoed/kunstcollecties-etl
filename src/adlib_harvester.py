@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-
 import lxml.etree as etree
 import urllib.request
 import os
@@ -35,7 +34,6 @@ def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', 
                         "&limit=" + str(limit) + \
                         "&startfrom=" + str(startfrom)
 
-        print(requestUrl)
         result = urllib.request.urlopen(requestUrl)
         adlibXML = result.read()
 
@@ -53,7 +51,6 @@ def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', 
                 "&search=priref=" + priref + \
                 "&XMLtype=" + xmltype
 
-                print(requestUrl)
                 result = urllib.request.urlopen(requestUrl)
                 adlibXML = result.read()
 
@@ -72,10 +69,10 @@ def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', 
         hits = dom.find(".//hits")
         numberFound = int(hits.text)
         if test:
-            numberFound = 200 # maximum for testing
+            numberFound = 1000 # maximum for testing
 
         page = page + 1
-        print(str(page * limit) + "-" + str(page * limit + limit) + " of " + str(numberFound))
+        logger.info(str(page * limit) + "-" + str(page * limit + limit) + " of " + str(numberFound))
 
     adlib_transformer.print_stats(stats)
     return rgraph
