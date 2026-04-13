@@ -80,6 +80,14 @@ def parse_path_to_graph(path: str) -> Graph:
     tree = ET.parse(path)    
     return parse_tree_to_graph(tree)
 
+def parse_string_to_graph(xml: str) -> Graph:
+    tree = ET.fromstring(xml)    
+    return parse_tree_to_graph(tree)
+
+def make_statistics_from_string(xml: str) -> dict[str, int]:
+    tree = ET.fromstring(xml)    
+    return make_statistics(tree, True)
+
 def make_statistics_from_path(path: str) -> dict[str, int]:
     tree = ET.parse(path)    
     return make_statistics(tree, True)

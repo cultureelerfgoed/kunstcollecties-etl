@@ -3,6 +3,7 @@ import logging
 import datetime
 from rdflib import Graph
 import adlib_transformer
+import adlib_harvester
 
 logger = logging.getLogger(__name__)
 path = 'data/output/'
@@ -19,28 +20,20 @@ def main():
         level=logging.INFO,
         datefmt='%Y-%m-%d %H:%M:%S')
     
+    a = datetime.datetime.now().replace(microsecond=0)
     rgraph = Graph()
-    
     try:
-        stats = {}
-        a = datetime.datetime.now().replace(microsecond=0)
-        for index, filename in enumerate(os.listdir(path)):
-            if not filename.endswith('.xml'): continue
-            fpath = os.path.join(path, filename)
-            rgraph = rgraph +  adlib_transformer.parse_path_to_graph(fpath)
-            stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_path(fpath))
-            if index % 1000 == 0: logger.info('%i files processed..', index)
+        rgraph = adlib_harvester.harvest(endpoint='https://rcerijswijk.adlibhosting.com/api.wo2/wwwopac.ashx', database='ruben', test=True)
     except OSError as oe:
-            logger.warning('Failed to write to file: %s', oe)
+        logger.warning('Failed to write to file: %s', oe)
     except TypeError as te:
-            logger.warning('Failed to find an element: %s', te)
+        logger.warning('Failed to find an element: %s', te)
     finally:
         b = datetime.datetime.now().replace(microsecond=0)
         logger.info('Finished after %s', str(b-a))
         logger.info("Writing  %s", f"{OUTPUT_FILE_FORMAT} file to {TARGET_FILEPATH}")
         rgraph.serialize(format=OUTPUT_FILE_FORMAT, destination=TARGET_FILEPATH, encoding=ENCODING, auto_compact=True)  
         logger.info("Filesize:  %s", f"{os.path.getsize(TARGET_FILEPATH)} bytes")
-        adlib_transformer.print_stats(stats)
 
 if __name__ == '__main__':
     main()
