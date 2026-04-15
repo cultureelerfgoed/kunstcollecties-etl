@@ -1,18 +1,18 @@
 #! /usr/bin/env python3
-import lxml.etree as etree
 import urllib.request
 import os
 import logging
 import datetime
-import adlib_transformer
 from rdflib import Graph
+import lxml.etree as etree
+import adlib_transformer
 
 logger = logging.getLogger(__name__)
 limit = 100
 
 GRAPH_ID = os.getenv('GRAPH_ID', 'default')
 OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
-TARGET_FILEPATH = os.getenv('TARGET_FILEPATH', 'kc.jsonld')
+ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
 ENCODING = os.getenv('ENCODING', 'utf-8')
 
 def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', test=False) -> Graph:

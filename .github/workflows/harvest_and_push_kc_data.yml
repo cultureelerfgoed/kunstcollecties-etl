@@ -5,7 +5,6 @@ env:
   ARTIFACT_PATH: 'artifact-data.jsonld'
   GRAPH_ID: 'kunstcollecties-latest-graph'
   DATASET_NAME: 'kunstcollecties-harvest'
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   workflow_dispatch:
@@ -17,7 +16,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v6
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.x'
     - name: Install dependencies
@@ -26,13 +25,9 @@ jobs:
         pip install -r requirements.txt
     - name: Harvest and transform 
       run: |
-        python src/workflow.py
-      env:
-        BASE_URI: ${{ env.SRC_URI }}
-        TARGET_FILEPATH: ${{ env.ARTIFACT_PATH }}
-        GRAPH_ID: ${{ env.GRAPH_ID }}   
+        python src/workflow.py   
     - name: Upload data artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: data-artifact
         path: ${{ env.ARTIFACT_PATH }}
@@ -43,7 +38,7 @@ jobs:
     needs: harvest-and-transform
     steps:
     - name: Download data artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
           name: data-artifact
     - name: Push changes to TriplyDB API via cURL

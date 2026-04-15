@@ -1,11 +1,11 @@
 import logging
-import xml.etree.ElementTree as ET
-import adlib_xpaths as xpath
-import adlib_tags as tags
+from typing import Optional
+from xml.etree.ElementTree import ElementTree, Element
 import uuid
-from rdflib import Graph
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import RDF, SDO
+import adlib_xpaths as xpath
+import adlib_tags as tags
 from adlibxml_to_schemaorg_mapping import BASIC_MAPPING, CREATOR_MAPPING, DIMENSION_MAPPING
 
 logger = logging.getLogger(__name__)
@@ -14,22 +14,22 @@ BASE_URI = 'https://linkeddata.cultureelerfgoed.nl/data/'
 
 # https://adlibug.nl/2014/09/17/how-to-create-a-full-list-of-tags-using-xml-and-xsl/
 
-def get_text(element: ET.Element, target_xpath:str) -> str:
+def get_text(element: Element, target_xpath:str) -> Optional[str]:
     target = next(element.iterfind(target_xpath))
     if target != None and target.text and target.text.strip() != '':
         return target.text
 
-def get_tree_text_from_xpath_safe(tree: ET, target_xpath: str) -> str:
+def get_tree_text_from_xpath_safe(tree: ElementTree, target_xpath: str) -> Optional[str]:
     t_elem = tree.find(target_xpath)
     if t_elem is not None and t_elem.text:
         return t_elem.text
 
-def get_element_text_from_xpath_safe(element: ET.Element, target_xpath: str) -> str:
+def get_element_text_from_xpath_safe(tree: ElementTree, target_xpath: str) -> Optional[str]:
     t_elem = element.find(target_xpath)
     if t_elem is not None and t_elem.text:
         return t_elem.text
 
-def parse_tree_to_graph(tree: ET) -> Graph:
+def parse_tree_to_graph(tree: ElementTree) -> Graph:
     sdo_record_graph = Graph()
     cwork_node = URIRef(BASE_URI+'CreativeWork/'+get_tree_text_from_xpath_safe(tree, xpath.PRIREF))
     sdo_record_graph.add((cwork_node, RDF.type, SDO.CreativeWork))

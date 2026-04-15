@@ -1,5 +1,5 @@
-import adlib_xpaths
 from rdflib.namespace import SDO
+import adlib_xpaths
 
 BASIC_MAPPING = {
     adlib_xpaths.DESCRIPTION_TEXT: SDO.description,

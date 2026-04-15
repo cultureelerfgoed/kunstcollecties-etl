@@ -1,0 +1,15 @@
+# Linked Data 
+BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
+
+# Kennisbank API 
+SRC_URI: 'https://rcerijswijk.adlibhosting.com/api.wo2/wwwopac.ashx'
+
+# Organisatie
+ORG_URI: 'https://www.cultureelerfgoed.nl'
+ORG_NAME: 'Rijksdienst voor het Cultureel Erfgoed'
+ORG_SAME_AS: 'https://standaarden.overheid.nl/owms/terms/Rijksdienst_voor_het_Cultureel_Erfgoed'
+ORG_CONTACT_NAME: 'Infodesk van de RCE'
+ORG_CONTACT_EMAIL: 'thesauri@cultureelerfgoed.nl'
+ORG_ISIL: 'NL-AmfRCE'
+ORG_ALTNAME: 'Cultural Heritage Agency of the Netherlands'
+
