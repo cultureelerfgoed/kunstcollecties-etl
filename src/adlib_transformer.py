@@ -44,7 +44,7 @@ def parse_tree_to_graph(tree: Any) -> Graph:
             sdo_record_graph.add((sdo_creator_node, ref[0], ref[1](item_text)))
 
     for index, dimension in enumerate(tree.findall(xpath.DIMENSION)):
-        qv_node = URIRef(get_object_uri(str(uuid.uuid4()), SDO.Dimension))
+        qv_node = get_object_uri(str(uuid.uuid4()), SDO.QuantitativeValue)
         sdo_record_graph.add((qv_node, RDF.type, SDO.QuantitativeValue))
 
         d_unit = next(dimension.iterfind(tags.DIMENSION_UNIT))
@@ -68,7 +68,7 @@ def parse_tree_to_graph(tree: Any) -> Graph:
 
         rholder_text = get_text_from_tree(tree, xpath.RIGHTS_HOLDER)
         if rholder_text:
-            sdo_rholder_node = URIRef(BASE_URI+'Person/'+str(uuid.uuid4()))
+            sdo_rholder_node = get_object_uri(str(uuid.uuid4()), SDO.Person) 
             sdo_record_graph.add((sdo_rholder_node, RDF.type, SDO.Person))
             sdo_record_graph.add((sdo_rholder_node, SDO.name, Literal(rholder_text)))
             sdo_record_graph.add((record_object_node, SDO.copyrightHolder, sdo_rholder_node))

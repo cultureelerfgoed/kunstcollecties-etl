@@ -23,7 +23,7 @@ CREATOR_MAPPING = {
     adlib_xpaths.CREATOR_NAME: [SDO.name, Literal], 
     adlib_xpaths.RKDARTISTS: [SDO.sameAs, URIRef], 
     adlib_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, Literal],
-    adlib_xpaths.CREATOR_DATE_OF_BIRTH: [SDO.birthDate, Literal], 
+    adlib_xpaths.CREATOR_DATE_OF_BIRTH: [SDO.birthDate, Literal],
     adlib_xpaths.CREATOR_ROLE: [SDO.additionalType, Literal],
 }
 
