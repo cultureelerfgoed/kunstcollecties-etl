@@ -8,6 +8,12 @@ env:
 
 on:
   workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Set a limit for the amount of records to harvest (0 for no limit).'
+        required: true
+        default: 0
+        type: number
     
 jobs:
   harvest-and-transform:
@@ -25,7 +31,9 @@ jobs:
         pip install -r requirements.txt
     - name: Harvest and transform 
       run: |
-        python src/workflow.py   
+        python src/workflow.py  
+      env:
+        LIMIT: ${{ inputs.limit }} 
     - name: Upload data artifact
       uses: actions/upload-artifact@v7
       with:

@@ -8,12 +8,14 @@ import lxml.etree as etree
 import adlib_transformer
 
 logger = logging.getLogger(__name__)
-limit = 100
+apiLimit = 100
 
 GRAPH_ID = os.getenv('GRAPH_ID', 'default')
 OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
 ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
 ENCODING = os.getenv('ENCODING', 'utf-8')
+LIMIT = int(os.getenv('LIMIT',1000))
+
 
 def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', test=False) -> Graph:
     ## initialize variables for loop
@@ -24,14 +26,14 @@ def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', 
     date = datetime.datetime.strptime('1900-01-01', '%Y-%m-%d')
 
     # iterate through resultpages
-    while (numberFound > (page * limit)):
-        startfrom = page * limit
+    while (numberFound > (page * apiLimit)):
+        startfrom = page * apiLimit
         # read page of records
         requestUrl = endpoint + \
                         "?database=" + database + \
                         "&search=" + search + \
                         "&XMLtype=" + xmltype + \
-                        "&limit=" + str(limit) + \
+                        "&limit=" + str(apiLimit) + \
                         "&startfrom=" + str(startfrom)
 
         result = urllib.request.urlopen(requestUrl)
@@ -68,11 +70,11 @@ def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', 
         ## read numberFound
         hits = dom.find(".//hits")
         numberFound = int(hits.text)
-        if test:
-            numberFound = 1000 # maximum for testing
+        if int(LIMIT) > 0:
+            numberFound = LIMIT # maximum for testing
 
         page = page + 1
-        logger.info(str(page * limit) + "-" + str(page * limit + limit) + " of " + str(numberFound))
+        logger.info(str(page * apiLimit) + "-" + str(page * apiLimit + apiLimit) + " of " + str(numberFound))
 
     adlib_transformer.print_stats(stats)
     return rgraph

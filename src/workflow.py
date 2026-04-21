@@ -8,7 +8,7 @@ import adlib_harvester
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 ENCODING = os.getenv('ENCODING', 'utf-8')
 GRAPH_ID = os.getenv('GRAPH_ID', 'default')
-ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'datacatalog.json-ld')
+ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.json-ld')
 OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
 
 config = yaml.safe_load(open(CONFIG_PATH, encoding=ENCODING))

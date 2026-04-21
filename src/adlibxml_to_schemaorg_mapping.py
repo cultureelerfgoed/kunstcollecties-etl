@@ -1,5 +1,12 @@
 from rdflib.namespace import SDO
+from rdflib import URIRef, Literal
 import adlib_xpaths
+
+RECORD_OBJECT_TYPES = [
+    SDO.CreativeWork,
+    SDO.ArchiveComponent,
+    SDO.ItemList,
+] 
 
 BASIC_MAPPING = {
     adlib_xpaths.DESCRIPTION_TEXT: SDO.description,
@@ -13,11 +20,11 @@ RIGHTS_MAPPING = {
 }
 
 CREATOR_MAPPING = {
-    adlib_xpaths.CREATOR_NAME: SDO.name, 
-    adlib_xpaths.RKDARTISTS: SDO.sameAs, 
-    adlib_xpaths.CREATOR_DATE_OF_DEATH: SDO.deathDate,
-    adlib_xpaths.CREATOR_DATE_OF_BIRTH: SDO.birthDate, 
-    adlib_xpaths.CREATOR_ROLE: SDO.additionalType,
+    adlib_xpaths.CREATOR_NAME: [SDO.name, Literal], 
+    adlib_xpaths.RKDARTISTS: [SDO.sameAs, URIRef], 
+    adlib_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, Literal],
+    adlib_xpaths.CREATOR_DATE_OF_BIRTH: [SDO.birthDate, Literal], 
+    adlib_xpaths.CREATOR_ROLE: [SDO.additionalType, Literal],
 }
 
 DIMENSION_MAPPING = {
