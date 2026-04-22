@@ -20,7 +20,7 @@ def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', 
     ## initialize variables for loop
     page = 0
     numberFound = 1000000
-    rgraph = Graph()
+    rgraph = adlib_transformer.get_organization()
     stats = {}
     date = datetime.datetime.strptime('1900-01-01', '%Y-%m-%d')
 

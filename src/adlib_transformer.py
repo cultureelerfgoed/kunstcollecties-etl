@@ -38,11 +38,10 @@ def parse_tree_to_graph(tree: Any) -> Graph:
         if item_text:
             sdo_record_graph.add((record_object_node, ref, Literal(item_text, lang='nl')))
 
+    # Creator
     sdo_creator_node = get_object_uri(priref, SDO.Person)
     sdo_record_graph.add((sdo_creator_node, RDF.type, SDO.Person))
     sdo_record_graph.add((record_object_node, SDO.creator, sdo_creator_node))
-
-    # Creator
     for key, ref in CREATOR_MAPPING.items():
         item_text = get_text_from_tree(tree, key)
         if item_text:
@@ -57,7 +56,6 @@ def parse_tree_to_graph(tree: Any) -> Graph:
         sdo_record_graph.add((r_ref_node, REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][2], get_memorix_uri_from_reference(r_ref.text)))
 
     # Organization 
-    sdo_record_graph = sdo_record_graph + get_organization()
     sdo_record_graph.add((record_object_node, SDO.provider, URIRef(config['ORG_URI'])))
 
     # Dimensions

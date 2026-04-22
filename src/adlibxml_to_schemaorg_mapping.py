@@ -13,6 +13,7 @@ BASIC_MAPPING = {
     adlib_xpaths.MATERIAL_ITEM: SDO.material,
     adlib_xpaths.OBJECT_NAME_ITEM: SDO.name,
     adlib_xpaths.DIMENSION_FREE: SDO.size,
+    adlib_xpaths.OBJECT_NUMBER: SDO.identifier
 }
 
 RIGHTS_MAPPING = {
