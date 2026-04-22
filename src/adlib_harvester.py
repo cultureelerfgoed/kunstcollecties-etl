@@ -14,7 +14,7 @@ GRAPH_ID = os.getenv('GRAPH_ID', 'default')
 OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
 ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
 ENCODING = os.getenv('ENCODING', 'utf-8')
-LIMIT = int(os.getenv('LIMIT',1000))
+LIMIT = int(os.getenv('LIMIT',1000)) # should be divisible by apiLimit
 
 
 def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', test=False) -> Graph:
@@ -74,7 +74,7 @@ def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', 
             numberFound = LIMIT # maximum for testing
 
         page = page + 1
-        logger.info(str(page * apiLimit) + "-" + str(page * apiLimit + apiLimit) + " of " + str(numberFound))
+        logger.info('Harvested %s out of %s records', str(page * apiLimit) + '-' + str(page * apiLimit + apiLimit), str(numberFound))
 
     adlib_transformer.print_stats(stats)
     return rgraph

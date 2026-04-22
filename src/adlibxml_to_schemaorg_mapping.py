@@ -1,5 +1,6 @@
 from rdflib.namespace import SDO
 from rdflib import URIRef, Literal
+from adlib_tags import PRODUCTION_DATE_END
 import adlib_xpaths
 
 RECORD_OBJECT_TYPES = [
@@ -24,10 +25,18 @@ CREATOR_MAPPING = {
     adlib_xpaths.RKDARTISTS: [SDO.sameAs, URIRef], 
     adlib_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, Literal],
     adlib_xpaths.CREATOR_DATE_OF_BIRTH: [SDO.birthDate, Literal],
-    adlib_xpaths.CREATOR_ROLE: [SDO.additionalType, Literal],
+    adlib_xpaths.CREATOR_ROLE: [SDO.hasOccupation, Literal],
 }
 
 DIMENSION_MAPPING = {
     adlib_xpaths.DIMENSION_UNIT: SDO.unitText,
     adlib_xpaths.DIMENSION_VALUE: SDO.value,
+}
+
+REPRODUCTION_MAPPING = {
+    adlib_xpaths.REPRODUCTION_REFERENCE: [SDO.associatedMedia, SDO.MediaObject, SDO.contentUrl, SDO.encodesCreativeWork]
+}
+
+PRODUCTION_MAPPING = {
+    adlib_xpaths.PRODUCTION_DATE_END: SDO.dateCreated
 }
