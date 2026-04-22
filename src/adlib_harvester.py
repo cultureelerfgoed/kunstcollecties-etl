@@ -8,14 +8,13 @@ import lxml.etree as etree
 import adlib_transformer
 
 logger = logging.getLogger(__name__)
-apiLimit = 100
+apiLimit = 1000
 
 GRAPH_ID = os.getenv('GRAPH_ID', 'default')
 OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
 ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
 ENCODING = os.getenv('ENCODING', 'utf-8')
 LIMIT = int(os.getenv('LIMIT',1000)) # should be divisible by apiLimit
-
 
 def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', test=False) -> Graph:
     ## initialize variables for loop
@@ -71,7 +70,7 @@ def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', 
         hits = dom.find(".//hits")
         numberFound = int(hits.text)
         if int(LIMIT) > 0:
-            numberFound = LIMIT # maximum for testing
+            numberFound = LIMIT
 
         page = page + 1
         logger.info('Harvested %s out of %s records', str(page * apiLimit) + '-' + str(page * apiLimit + apiLimit), str(numberFound))

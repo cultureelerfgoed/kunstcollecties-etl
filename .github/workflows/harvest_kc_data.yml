@@ -1,10 +1,10 @@
-name: 'RCE Kunscollecties ETL TEST' 
+name: 'RCE Kunscollecties ETL: test' 
 
 env:
   BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
   ARTIFACT_PATH: 'artifact-data.jsonld'
   GRAPH_ID: 'kunstcollecties-latest-graph'
-  DATASET_NAME: 'kunstcollecties-harvest'
+  DATASET_NAME: 'Kunstcollecties-Harvest'
 
 on:
   workflow_dispatch:

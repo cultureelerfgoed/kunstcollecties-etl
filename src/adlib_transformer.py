@@ -50,7 +50,6 @@ def parse_tree_to_graph(tree: Any) -> Graph:
 
     # Link to image of object at memorix based on reproduction reference
     for index, r_ref in enumerate(tree.findall(xpath.REPRODUCTION_REFERENCE)):
-        logger.info('Adding triples for reproduction reference: %s', r_ref)
         r_ref_node = get_object_uri(r_ref.text, REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1])
         sdo_record_graph.add((r_ref_node, RDF.type, REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1]))
         sdo_record_graph.add((record_object_node, REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][0], r_ref_node))

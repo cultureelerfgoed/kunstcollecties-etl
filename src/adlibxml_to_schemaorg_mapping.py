@@ -1,6 +1,5 @@
 from rdflib.namespace import SDO
 from rdflib import URIRef, Literal
-from adlib_tags import PRODUCTION_DATE_END
 import adlib_xpaths
 
 RECORD_OBJECT_TYPES = [
