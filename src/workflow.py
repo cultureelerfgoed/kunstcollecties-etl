@@ -33,7 +33,7 @@ def main():
     try:
         adlib_harvester.harvest(rgraph, endpoint=config['SRC_URI'], database='ruben', make_stats=True)
     except OSError as oe:
-        logger.warning('OSError: %s', str(oe))
+        logger.warning('OSError: %s <%s>', str(oe))
     except TypeError as te:
         logger.warning('TypeError: %s', str(te))
     finally:

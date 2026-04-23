@@ -105,6 +105,10 @@ def get_object_uri(obj_id: str, obj_type=SDO.Person) -> URIRef:
     obj_uri = urljoin(BASE_URI, obj_ttl)
     return URIRef(obj_uri)
 
+def make_statistics_from_string(xml: str) -> dict[str, int]:
+    tree = ET.fromstring(xml)    
+    return make_statistics(tree, True)
+
 def make_statistics(tree: Any, check_text=False) -> dict[str, int]:
     stats = {
         'total_files_processed': 0
