@@ -9,16 +9,14 @@ import adlib_transformer
 logger = logging.getLogger(__name__)
 apiLimit = 500
 
-GRAPH_ID = os.getenv('GRAPH_ID', 'default')
 OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
 ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
 ENCODING = os.getenv('ENCODING', 'utf-8')
-LIMIT = int(os.getenv('LIMIT', 1000)) # max 141058 records
+LIMIT = int(os.getenv('LIMIT', 2000)) # max 141058 records
 
-def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', test=False) -> Graph:
+def harvest(target_graph: Graph, endpoint: str, database='collect', search='all', xmltype='grouped', make_stats=False) -> Graph:
     ## initialize variables for loop
     page = 0
-    rgraph = adlib_transformer.get_organization()
     stats = {}
     r_iter = 0
 
@@ -44,8 +42,9 @@ def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', 
                 # parse adlibXML
                 r_iter = r_iter + 1
                 try:
-                    rgraph = rgraph +  adlib_transformer.parse_tree_to_graph(record)
-                    stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(ET.tostring(record)))
+                    adlib_transformer.parse_tree_to_graph(target_graph, record)
+                    if make_stats:
+                        stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(ET.tostring(record)))
                 except TypeError as te:
                     logger.warning('TypeError: %s', te)
         else:
@@ -54,6 +53,6 @@ def harvest(endpoint: str, database='collect', search='all', xmltype='grouped', 
         logger.info('Harvested %s out of %s records', str(page * apiLimit) + '-' + str(page * apiLimit + apiLimit), str(LIMIT))
         page = page + 1
 
-
-    adlib_transformer.print_stats(stats)
-    return rgraph
+    if make_stats:
+        adlib_transformer.print_stats(stats)
+    return target_graph

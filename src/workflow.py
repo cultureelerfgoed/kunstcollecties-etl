@@ -2,8 +2,10 @@ import os
 import logging
 import datetime
 from rdflib import Graph
+from rdflib.namespace import SDO, RDF, RDFS
 import yaml
 import adlib_harvester
+import adlib_transformer
 
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 ENCODING = os.getenv('ENCODING', 'utf-8')
@@ -23,8 +25,13 @@ def main():
     
     a = datetime.datetime.now().replace(microsecond=0)
     rgraph = Graph()
+    rgraph.bind('sdo', SDO, override=True)
+    rgraph.bind('rdf', RDF, override=True)
+    rgraph.bind('rdfs', RDFS, override=True)
+    adlib_transformer.add_organization(rgraph)
+
     try:
-        rgraph = adlib_harvester.harvest(endpoint=config['SRC_URI'], database='ruben', test=True)
+        adlib_harvester.harvest(rgraph, endpoint=config['SRC_URI'], database='ruben', make_stats=True)
     except OSError as oe:
         logger.warning('OSError: %s', str(oe))
     except TypeError as te:
@@ -32,8 +39,13 @@ def main():
     finally:
         b = datetime.datetime.now().replace(microsecond=0)
         logger.info('Finished after %s', str(b-a))
-        logger.info("Writing  %s", f"{OUTPUT_FILE_FORMAT} file to {ARTIFACT_PATH}")
-        rgraph.serialize(format=OUTPUT_FILE_FORMAT, destination=ARTIFACT_PATH, encoding=ENCODING, auto_compact=True)  
+        logger.info('Writing  %s', f'{OUTPUT_FILE_FORMAT} file to {ARTIFACT_PATH}')
+        rgraph.serialize(format=OUTPUT_FILE_FORMAT, 
+                         destination=ARTIFACT_PATH, 
+                         encoding=ENCODING, 
+                         auto_compact=True,
+                         context={'sdo':'https://schema.org/'},
+                         )  
         logger.info("Filesize:  %s", f"{(os.path.getsize(ARTIFACT_PATH) / 1000)} KB")
 
 if __name__ == '__main__':
