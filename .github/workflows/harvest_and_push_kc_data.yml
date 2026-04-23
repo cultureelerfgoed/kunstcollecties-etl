@@ -60,7 +60,7 @@ jobs:
         tar cvf - ${{ env.ARTIFACT_PATH }} | gzip -9 - > artifact.tar.gz
     - name: Push changes to TriplyDB API via CLI
       run: |
-        ./triplydb-linux import-from-file --dataset "${{ env.DATASET_NAME }}" --token "${{ secrets.LDV_API_TOKEN }}" --account "rce" --url "https://api.linkeddata.cultureelerfgoed.nl" --default-graph-name "https://linkeddata.cultureelerfgoed.nl/rce/${{ env.DATASET_NAME }}/graphs/${{ env.GRAPH_ID }}" --mode "overwrite" artifact.tar.gz 
+        ./triplydb-linux import-from-file --dataset "${{ env.DATASET_NAME }}" --token "${{ secrets.LDV_API_TOKEN }}" --account "rce" --url "https://api.linkeddata.cultureelerfgoed.nl" --default-graph-name "https://linkeddata.cultureelerfgoed.nl/rce/${{ env.DATASET_NAME }}/graphs/${{ env.GRAPH_ID }}" --mode "overwrite" artifact.tar.gz
     - name: Print triply error response
       if: ${{ failure() }}
       run: |
