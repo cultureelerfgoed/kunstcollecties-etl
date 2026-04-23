@@ -14,6 +14,10 @@ on:
         required: true
         default: 0
         type: number
+      modification:
+        description: 'Harvested records must have been modified on or after supplied ISO-8601 date.'
+        required: false
+        type: string
     
 jobs:
   harvest-and-transform:
@@ -56,6 +60,10 @@ jobs:
     - name: Push changes to TriplyDB API via CLI
       run: |
         ./triplydb-linux import-from-file --dataset "${{ env.DATASET_NAME }}" --token "${{ secrets.LDV_API_TOKEN }}" --account "rce" --url "https://api.linkeddata.cultureelerfgoed.nl" --default-graph-name "https://linkeddata.cultureelerfgoed.nl/rce/${{ env.DATASET_NAME }}/graphs/${{ env.GRAPH_ID }}" --mode "overwrite" ${{ env.ARTIFACT_PATH }} 
+    - name: Print triply error response
+      if: ${{ failure() }}
+      run: |
+        cat .triplydb-js.err
 
   sync-triply:
     runs-on: ubuntu-latest
