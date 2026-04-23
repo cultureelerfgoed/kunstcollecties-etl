@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 import adlib_transformer
 
 logger = logging.getLogger(__name__)
-apiLimit = 500
+apiLimit = 100
 
 OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
 ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
