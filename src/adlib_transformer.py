@@ -27,7 +27,6 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     if priref:
         record_object_node = get_object_uri(priref, SDO.CreativeWork)
     else:
-        logger.warning('Record rejected due to mod date %s < %s', str(mod_dt), str(MODIFIED_ON_OR_AFTER))
         return target_graph
     
     for rtype in adlibxml_to_schemaorg_mapping.RECORD_OBJECT_TYPES:
