@@ -101,6 +101,16 @@ def get_text_from_element(element: ET.Element, target_xpath:str) -> Optional[str
         if t_elem is not None and t_elem.text:
             return t_elem.text
 
+def get_text(item: (ET.ElementTree | ET.Element), target_xpath: str) -> Optional[str]:
+    target = next(item.iterfind(target_xpath))
+    if target is not None and target.text and target.text.strip() != '':
+        return target.text
+    else:
+        logger.warning('Used fallback search.')
+        t_elem = item.find(target_xpath)
+        if t_elem is not None and t_elem.text:
+            return t_elem.text
+
 def get_text_from_tree(tree: ET.ElementTree, target_xpath: str) -> Optional[str]:
     t_elem = tree.find(target_xpath)
     if t_elem is not None and t_elem.text:
