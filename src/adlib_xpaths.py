@@ -68,6 +68,7 @@ OBJECT_CATEGORY = './/object_category'
 OBJECT_NUMBER = './/object_number'
 PART = './/part'
 PRIREF = './/priref'
+MODIFICATION = './/modification'
 
 RECORD_TYPE = './/record_type'
 

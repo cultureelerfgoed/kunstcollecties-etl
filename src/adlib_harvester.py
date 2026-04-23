@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import datetime
 import urllib.request
 import os
 import logging
@@ -12,7 +13,8 @@ apiLimit = 100
 OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
 ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
 ENCODING = os.getenv('ENCODING', 'utf-8')
-LIMIT = int(os.getenv('LIMIT', 2000)) # max 141058 records
+LIMIT = int(os.getenv('LIMIT', 100)) # max 141058 records
+MODIFIED_ON_OR_AFTER = datetime.datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970-01-01'), '%Y-%m-%d')
 
 def harvest(target_graph: Graph, endpoint: str, database='collect', search='all', xmltype='grouped', make_stats=False) -> Graph:
     ## initialize variables for loop
@@ -39,14 +41,17 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
         r_list = root.findall('.//record')
         if len(r_list) > 0:
             for record in r_list:
+                mod_txt = record.attrib['modification']
+                mod_dt = datetime.datetime.strptime(mod_txt, '%Y-%m-%dT%H:%M:%S')
                 # parse adlibXML
                 r_iter = r_iter + 1
-                try:
-                    adlib_transformer.parse_tree_to_graph(target_graph, record)
-                    if make_stats:
-                        stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(ET.tostring(record)))
-                except TypeError as te:
-                    logger.warning('TypeError: %s', te)
+                if mod_dt >= MODIFIED_ON_OR_AFTER:
+                    try:
+                        adlib_transformer.parse_tree_to_graph(target_graph, record)
+                        if make_stats:
+                            stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(ET.tostring(record)))
+                    except TypeError as te:
+                        logger.warning('TypeError: %s', te)
         else:
             break
 

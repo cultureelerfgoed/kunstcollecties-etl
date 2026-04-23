@@ -27,6 +27,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     if priref:
         record_object_node = get_object_uri(priref, SDO.CreativeWork)
     else:
+        logger.warning('Record rejected due to mod date %s < %s', str(mod_dt), str(MODIFIED_ON_OR_AFTER))
         return target_graph
     
     for rtype in adlibxml_to_schemaorg_mapping.RECORD_OBJECT_TYPES:
@@ -154,3 +155,18 @@ def add_organization(target_graph: Graph) -> Graph:
     target_graph.add((organization_node, SDO.identifier, Literal(config['ORG_ISIL'])))
     target_graph.add((organization_node, SDO.alternateName, Literal(config['ORG_ALTNAME'], lang='en')))
     return target_graph
+
+def main():
+    """ main runner for workflow """
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level=logging.INFO,
+        datefmt='%Y-%m-%d %H:%M:%S')
+    
+    etree = ET.parse('data/output/rubenpriref24095.adlib.xml')
+    root = etree.getroot()
+    
+    
+
+if __name__ == '__main__':
+    main()
