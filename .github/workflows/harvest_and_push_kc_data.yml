@@ -49,9 +49,6 @@ jobs:
       uses: actions/download-artifact@v8
       with:
           name: data-artifact
-    - name: Push changes to TriplyDB API via cURL
-      run:  |
-        curl -H 'Authorization: Bearer ${{ secrets.LDV_API_TOKEN }}' -H 'Content-Type: application/ld+json' -X POST 'https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/${{ env.DATASET_NAME }}/jobs'  -F file='${{ env.ARTIFACT_PATH }}'
     - name: Install dependencies
       run: |
         wget 'https://static.triply.cc/cli/triplydb-linux'
@@ -64,6 +61,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: push-to-triply
     steps:
-    - name: Push changes to TriplyDB API via cURL
+    - name: Sync changes to TriplyDB API via cURL
       run:  |
-        curl -H 'Authorization: Bearer ${{ secrets.LDV_API_TOKEN }}' -H 'Content-Type: application/json' -X POST https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/${{ env.DATASET_NAME }}/services/datacatalog -d '{"sync": "true"}'
+        curl -H 'Authorization: Bearer ${{ secrets.LDV_API_TOKEN }}' -H 'Content-Type: application/json' -X POST https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/${{ env.DATASET_NAME }}/services/kunstcollecties-harvest -d '{"sync": "true"}'

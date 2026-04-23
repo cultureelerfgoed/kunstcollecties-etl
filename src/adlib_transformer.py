@@ -117,7 +117,7 @@ def make_statistics(tree: Any, check_text=False) -> dict[str, int]:
         if check_text:
             text_present = (elem.text != None and elem.text.strip() != '')
             has_children = len(list(elem)) 
-            if not (text_present or has_children): continue
+            if not (text_present or has_children > 0): continue
         if elem.tag in stats:
             stats[elem.tag] = stats[elem.tag] + 1
         else:

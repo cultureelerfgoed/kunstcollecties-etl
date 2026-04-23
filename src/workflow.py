@@ -31,7 +31,7 @@ def main():
     adlib_transformer.add_organization(rgraph)
 
     try:
-        adlib_harvester.harvest(rgraph, endpoint=config['SRC_URI'], database='ruben', make_stats=True)
+        adlib_harvester.harvest(rgraph, endpoint=config['SRC_URI'], database='ruben', make_stats=False)
     except OSError as oe:
         logger.warning('OSError: %s <%s>', str(oe))
     except TypeError as te:
