@@ -29,6 +29,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     else:
         return target_graph
     
+    target_graph.add((record_object_node, SDO.isPartOf, URIRef('https://linkeddata.cultureelerfgoed.nl/rce/datacatalog/Dataset/103')))
     for rtype in adlibxml_to_schemaorg_mapping.RECORD_OBJECT_TYPES:
         target_graph.add((record_object_node, RDF.type, rtype))
 
@@ -44,7 +45,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     for key, ref in CREATOR_MAPPING.items():
         item_text = get_text_from_tree(tree, key)
         if item_text:
-            target_graph.add((sdo_creator_node, ref[0], ref[1](item_text)))
+            target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
 
     # Link to image of object at memorix based on reproduction reference
     for index, r_ref in enumerate(tree.findall(xpath.REPRODUCTION_REFERENCE)):
@@ -96,10 +97,10 @@ def get_text_from_tree(tree: (ET.ElementTree | ET.Element), target_xpath: str) -
         return t_elem.text
     
 def get_memorix_uri_from_reference(ref: str) -> URIRef:
-    return URIRef(f'https://images.memorix.nl/rce/thumb/1600x1600/{ref}.jpg')
+    return URIRef(f'https://images.memorix.nl/rce/thumb/1600x1600/{ref.strip()}.jpg')
     
 def get_object_uri(obj_id: str, obj_type=SDO.Person) -> URIRef:
-    obj_pfx = ('data' + urlsplit(obj_type).path + '/')
+    obj_pfx = ('linkeddata' + urlsplit(obj_type).path + '/')
     obj_sfx = str(uuid.uuid3(namespace=uuid.NAMESPACE_URL, name=obj_id))
     obj_ttl = urljoin(obj_pfx, obj_sfx)
     obj_uri = urljoin(BASE_URI, obj_ttl)
