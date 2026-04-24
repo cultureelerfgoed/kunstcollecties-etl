@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     
     priref = get_text_from_tree(tree, xpath.PRIREF)
-    mod_txt = tree.attrib['modification']
-    mod_dt = datetime.datetime.strptime(mod_txt, '%Y-%m-%dT%H:%M:%S')
+    cre_dt = datetime.datetime.strptime(tree.attrib['created'], '%Y-%m-%dT%H:%M:%S')
+    mod_dt = datetime.datetime.strptime(tree.attrib['modification'], '%Y-%m-%dT%H:%M:%S')
     if priref and mod_dt >= MODIFIED_ON_OR_AFTER:
         record_object_node = uritools.get_object_uri(config['BASE_URI'], priref, SDO.CreativeWork)
         target_graph.add((record_object_node, SDO.sdDatePublished, Literal(mod_dt, datatype=XSD.dateTime)))
