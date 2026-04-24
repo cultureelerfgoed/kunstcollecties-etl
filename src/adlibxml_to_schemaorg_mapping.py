@@ -8,16 +8,32 @@ RECORD_OBJECT_TYPES = [
     SDO.ItemList,
 ]
 
-CHT_TERM_FIELDS = {
+CHT_TERM_TYPES = {
+    adlib_xpaths.MATERIAL_ITEM: [SDO.DefinedTerm, SDO.URL],
+    adlib_xpaths.OBJECT_CATEGORY: [SDO.DefinedTerm],
+    adlib_xpaths.ASSOCIATION_SUBJECT: [SDO.DefinedTerm, SDO.URL],
+}
+
+CHT_TERM_FIELD_MAPPING = {
     adlib_xpaths.MATERIAL_ITEM: SDO.material,
     adlib_xpaths.OBJECT_CATEGORY: SDO.genre,
+    adlib_xpaths.ASSOCIATION_SUBJECT: SDO.additionalType,
 } 
 
-BASIC_MAPPING = {
+LOCATION_FIELDS = {
+    adlib_xpaths.PRODUCTION_PLACE: [SDO.locationCreated, SDO.Place],
+}
+
+BASIC_MAPPING_NL = {
     adlib_xpaths.DESCRIPTION_TEXT: SDO.description,
     adlib_xpaths.OBJECT_NAME_ITEM: SDO.name,
     adlib_xpaths.DIMENSION_FREE: SDO.size,
-    adlib_xpaths.OBJECT_NUMBER: SDO.identifier
+    adlib_xpaths.OBJECT_NUMBER: SDO.identifier,
+    adlib_xpaths.PRODUCTION_DATE_END: SDO.dateCreated,
+}
+
+BASIC_MAPPING = {
+    adlib_xpaths.PRODUCTION_DATE_END: SDO.dateCreated,
 }
 
 RIGHTS_MAPPING = {

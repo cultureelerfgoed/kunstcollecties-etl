@@ -50,17 +50,14 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
         if len(r_list) > 0:
             max_r = int(root.find('.//hits').text) # get amount of hits from page containing records
             for record in r_list:
-                mod_txt = record.attrib['modification']
-                mod_dt = datetime.datetime.strptime(mod_txt, '%Y-%m-%dT%H:%M:%S')
                 # parse adlibXML
                 r_iter = r_iter + 1
-                if mod_dt >= MODIFIED_ON_OR_AFTER:
-                    try:
-                        adlib_transformer.parse_tree_to_graph(target_graph, record)
-                        if make_stats:
-                            stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(ET.tostring(record)))
-                    except (TypeError, AssertionError) as te:
-                        logger.warning('Error during transformation: %s', te)
+                try:
+                    adlib_transformer.parse_tree_to_graph(target_graph, record)
+                    if make_stats:
+                        stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(ET.tostring(record)))
+                except (TypeError, AssertionError) as te:
+                    logger.warning('Error during transformation: %s', te)
         else:
             logger.info('Reached end of records.')
             break
