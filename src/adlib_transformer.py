@@ -1,22 +1,21 @@
+import datetime
 import logging
 from typing import Optional, Any
 import xml.etree.ElementTree as ET
 import uuid
 import os
-from urllib.parse import urlsplit, urljoin
 import yaml
 from rdflib import Graph, Literal, URIRef, BNode
-from rdflib.namespace import RDF, SDO
+from rdflib.namespace import RDF, SDO, XSD
+import uritools
 import adlib_xpaths as xpath
 import adlib_tags as tags
-from adlibxml_to_schemaorg_mapping import BASIC_MAPPING, CREATOR_MAPPING, DIMENSION_MAPPING, REPRODUCTION_MAPPING
+from adlibxml_to_schemaorg_mapping import BASIC_MAPPING, CREATOR_MAPPING, DIMENSION_MAPPING, REPRODUCTION_MAPPING, CHT_TERM_FIELDS
 import adlibxml_to_schemaorg_mapping
 
-logger = logging.getLogger(__name__)
-BASE_URI = 'https://linkeddata.cultureelerfgoed.nl/'
-GRAPH_ID = os.getenv('GRAPH_ID', 'default')
-ENCODING = os.getenv('ENCODING', 'utf-8')
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
+ENCODING = os.getenv('ENCODING', 'utf-8')
+MODIFIED_ON_OR_AFTER = datetime.datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970-01-01'), '%Y-%m-%d')
 
 config = yaml.safe_load(open(CONFIG_PATH, encoding=ENCODING))
 logger = logging.getLogger(__name__)
@@ -24,22 +23,40 @@ logger = logging.getLogger(__name__)
 def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     
     priref = get_text_from_tree(tree, xpath.PRIREF)
-    if priref:
-        record_object_node = get_object_uri(priref, SDO.CreativeWork)
+    mod_txt = tree.attrib['modification']
+    mod_dt = datetime.datetime.strptime(mod_txt, '%Y-%m-%dT%H:%M:%S')
+    if priref and mod_dt >= MODIFIED_ON_OR_AFTER:
+        record_object_node = uritools.get_object_uri(config['BASE_URI'], priref, SDO.CreativeWork)
+        target_graph.add((record_object_node, SDO.sdDatePublished, Literal(mod_dt, datatype=XSD.dateTime)))
     else:
         return target_graph
     
+    # adding required field isPartOf dataset reference
     target_graph.add((record_object_node, SDO.isPartOf, URIRef('https://linkeddata.cultureelerfgoed.nl/rce/datacatalog/Dataset/103')))
     for rtype in adlibxml_to_schemaorg_mapping.RECORD_OBJECT_TYPES:
         target_graph.add((record_object_node, RDF.type, rtype))
 
+    # first degree attributes
     for key, ref in BASIC_MAPPING.items():
         item_text = get_text_from_tree(tree, key)
         if item_text:
             target_graph.add((record_object_node, ref, Literal(item_text, lang='nl')))
 
+    # first degree attributes that might be enrichable via CHT
+    for key, ref in CHT_TERM_FIELDS.items():
+        item_text = get_text_from_tree(tree, key)
+        if item_text:
+            dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], str(uuid.uuid4()), SDO.DefinedTerm))
+            target_graph.add((record_object_node, ref, dt_url))
+            target_graph.add((dt_url, RDF.type, SDO.DefinedTerm))
+            target_graph.add((dt_url, RDF.type, SDO.URL))
+            target_graph.add((dt_url, SDO.name, Literal(item_text, lang='nl')))
+            term_uri = uritools.get_term_uri_from_cht(item_text)
+            if term_uri:
+                target_graph.add((dt_url, SDO.sameAs, URIRef(term_uri)))
+
     # Creator
-    sdo_creator_node = get_object_uri(priref, SDO.Person)
+    sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], priref, SDO.Person)
     target_graph.add((sdo_creator_node, RDF.type, SDO.Person))
     target_graph.add((record_object_node, SDO.creator, sdo_creator_node))
     for key, ref in CREATOR_MAPPING.items():
@@ -49,18 +66,18 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
 
     # Link to image of object at memorix based on reproduction reference
     for index, r_ref in enumerate(tree.findall(xpath.REPRODUCTION_REFERENCE)):
-        r_ref_node = get_object_uri(r_ref.text, REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1])
+        r_ref_node = uritools.get_object_uri(config['BASE_URI'], r_ref.text, REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1])
         target_graph.add((r_ref_node, RDF.type, REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1]))
         target_graph.add((record_object_node, REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][0], r_ref_node))
         target_graph.add((r_ref_node, REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][3], record_object_node))
-        target_graph.add((r_ref_node, REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][2], get_memorix_uri_from_reference(r_ref.text)))
+        target_graph.add((r_ref_node, REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][2], uritools.get_memorix_uri_from_reference(r_ref.text)))
 
     # Organization 
     target_graph.add((record_object_node, SDO.provider, URIRef(config['ORG_URI'])))
 
     # Dimensions
     for index, dimension in enumerate(tree.findall(xpath.DIMENSION)):
-        qv_node = get_object_uri(str(uuid.uuid4()), SDO.QuantitativeValue)
+        qv_node = uritools.get_object_uri(config['BASE_URI'], str(uuid.uuid4()), SDO.QuantitativeValue)
         target_graph.add((qv_node, RDF.type, SDO.QuantitativeValue))
 
         d_unit = next(dimension.iterfind(tags.DIMENSION_UNIT))
@@ -84,7 +101,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
 
         rholder_text = get_text_from_tree(tree, xpath.RIGHTS_HOLDER)
         if rholder_text:
-            sdo_rholder_node = get_object_uri(str(uuid.uuid4()), SDO.Person)
+            sdo_rholder_node = uritools.get_object_uri(config['BASE_URI'], str(uuid.uuid4()), SDO.Person)
             target_graph.add((sdo_rholder_node, RDF.type, SDO.Person))
             target_graph.add((sdo_rholder_node, SDO.name, Literal(rholder_text)))
             target_graph.add((record_object_node, SDO.copyrightHolder, sdo_rholder_node))
@@ -95,16 +112,6 @@ def get_text_from_tree(tree: (ET.ElementTree | ET.Element), target_xpath: str) -
     t_elem = tree.find(target_xpath)
     if t_elem is not None and t_elem.text:
         return t_elem.text
-    
-def get_memorix_uri_from_reference(ref: str) -> URIRef:
-    return URIRef(f'https://images.memorix.nl/rce/thumb/1600x1600/{ref.strip()}.jpg')
-    
-def get_object_uri(obj_id: str, obj_type=SDO.Person) -> URIRef:
-    obj_pfx = ('linkeddata' + urlsplit(obj_type).path + '/')
-    obj_sfx = str(uuid.uuid3(namespace=uuid.NAMESPACE_URL, name=obj_id))
-    obj_ttl = urljoin(obj_pfx, obj_sfx)
-    obj_uri = urljoin(BASE_URI, obj_ttl)
-    return URIRef(obj_uri)
 
 def make_statistics_from_string(xml: str) -> dict[str, int]:
     tree = ET.fromstring(xml)    
@@ -140,22 +147,6 @@ def print_stats(base: dict[str, int]):
         percentage = (sorted_stats[key] / sorted_stats['total_files_processed']) * 100
         logger.info('Element %s occurred %i times (%i%%)', key, sorted_stats[key], percentage)
 
-def add_organization(target_graph: Graph) -> Graph:
-    """ get graph with organization node """
-    # organization information
-    organization_node = URIRef(config['ORG_URI'])
-    target_graph.add((organization_node, RDF.type, SDO.Organization))
-    target_graph.add((organization_node, SDO.name, Literal(config['ORG_NAME'], lang='nl')))
-    target_graph.add((organization_node, SDO.sameAs, URIRef(config['ORG_SAME_AS'])))
-    cp_node = BNode()
-    target_graph.add((cp_node, RDF.type, SDO.ContactPoint))
-    target_graph.add((cp_node, SDO.name, Literal(config['ORG_CONTACT_NAME'], lang='nl')))
-    target_graph.add((cp_node, SDO.email, Literal(config['ORG_CONTACT_EMAIL'])))
-    target_graph.add((organization_node, SDO.contactPoint, cp_node))
-    target_graph.add((organization_node, SDO.identifier, Literal(config['ORG_ISIL'])))
-    target_graph.add((organization_node, SDO.alternateName, Literal(config['ORG_ALTNAME'], lang='en')))
-    return target_graph
-
 def main():
     """ main runner for workflow """
     logging.basicConfig(
@@ -165,8 +156,6 @@ def main():
     
     etree = ET.parse('data/output/rubenpriref24095.adlib.xml')
     root = etree.getroot()
-    
-    
 
 if __name__ == '__main__':
     main()

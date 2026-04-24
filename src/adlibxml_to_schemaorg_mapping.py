@@ -6,11 +6,15 @@ RECORD_OBJECT_TYPES = [
     SDO.CreativeWork,
     SDO.ArchiveComponent,
     SDO.ItemList,
-] 
+]
+
+CHT_TERM_FIELDS = {
+    adlib_xpaths.MATERIAL_ITEM: SDO.material,
+    adlib_xpaths.OBJECT_CATEGORY: SDO.genre,
+} 
 
 BASIC_MAPPING = {
     adlib_xpaths.DESCRIPTION_TEXT: SDO.description,
-    adlib_xpaths.MATERIAL_ITEM: SDO.material,
     adlib_xpaths.OBJECT_NAME_ITEM: SDO.name,
     adlib_xpaths.DIMENSION_FREE: SDO.size,
     adlib_xpaths.OBJECT_NUMBER: SDO.identifier

@@ -2,16 +2,16 @@ import os
 import logging
 import datetime
 from rdflib import Graph
-from rdflib.namespace import SDO, RDF, RDFS
 import yaml
+import uritools
 import adlib_harvester
 import adlib_transformer
 
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 ENCODING = os.getenv('ENCODING', 'utf-8')
 GRAPH_ID = os.getenv('GRAPH_ID', 'default')
-ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.trig')
-OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'trig')
+ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
+OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
 
 config = yaml.safe_load(open(CONFIG_PATH, encoding=ENCODING))
 logger = logging.getLogger(__name__)
@@ -24,16 +24,18 @@ def main():
         datefmt='%Y-%m-%d %H:%M:%S')
     
     a = datetime.datetime.now().replace(microsecond=0)
-    rgraph = Graph()
-    rgraph.bind('sdo', SDO, override=True)
-    rgraph.bind('rdf', RDF, override=True)
-    rgraph.bind('rdfs', RDFS, override=True)
-    adlib_transformer.add_organization(rgraph)
+    rgraph = uritools.get_organization(config['ORG_URI'], 
+                                       config['ORG_NAME'], 
+                                       config['ORG_SAME_AS'],
+                                       config['ORG_CONTACT_NAME'],
+                                       config['ORG_CONTACT_EMAIL'],
+                                       config['ORG_ISIL'],
+                                       config['ORG_ALTNAME'])
 
     try:
-        adlib_harvester.harvest(rgraph, endpoint=config['SRC_URI'], database='ruben', make_stats=False)
+        adlib_harvester.harvest(rgraph, endpoint=config['SRC_URI'], database='ruben', make_stats=False, start_from_record=144500)
     except Exception as e:
-        logger.warning('Generic Exception: %s', str(e))
+        logger.error('Harvesting failed: %s', str(e))
     finally:
         b = datetime.datetime.now().replace(microsecond=0)
         logger.info('Finished after %s', str(b-a))
@@ -42,9 +44,6 @@ def main():
                          destination=ARTIFACT_PATH, 
                          encoding=ENCODING, 
                          auto_compact=True,
-                         context={'sdo': SDO._NS,
-                                  'rdf': RDF._NS,
-                                  'rdfs': RDFS._NS,},
                          )  
         logger.info("Filesize:  %s", f"{(os.path.getsize(ARTIFACT_PATH) / 1000)} KB")
 

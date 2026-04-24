@@ -6,7 +6,6 @@ import logging
 from rdflib import Graph
 import xml.etree.ElementTree as ET
 import adlib_transformer
-import adlib_xpaths as xpath
 
 logger = logging.getLogger(__name__)
 apiLimit = 100
@@ -15,7 +14,7 @@ OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
 ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
 ENCODING = os.getenv('ENCODING', 'utf-8')
 LIMIT = int(os.getenv('LIMIT', 0)) # max 141058 records
-MODIFIED_ON_OR_AFTER = datetime.datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '2026-01-01'), '%Y-%m-%d')
+MODIFIED_ON_OR_AFTER = datetime.datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970-01-01'), '%Y-%m-%d')
 
 def harvest(target_graph: Graph, endpoint: str, database='collect', search='all', xmltype='grouped', make_stats=False, start_from_record=None) -> Graph:
     ## initialize variables for loop
@@ -46,9 +45,8 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
             # get detailed information with priref
             r_list = root.findall('.//record')
         except (TimeoutError, OSError) as re:
-            logger.warning('Something went wrong getting the page: %s', str(re))
+            logger.warning('Error while getting the page: %s', str(re))
 
-        logger.info('found %i records', len(r_list))
         if len(r_list) > 0:
             max_r = int(root.find('.//hits').text) # get amount of hits from page containing records
             for record in r_list:
@@ -61,13 +59,13 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
                         adlib_transformer.parse_tree_to_graph(target_graph, record)
                         if make_stats:
                             stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(ET.tostring(record)))
-                    except TypeError as te:
-                        logger.warning('TypeError: %s', te)
+                    except (TypeError, AssertionError) as te:
+                        logger.warning('Error during transformation: %s', te)
         else:
             logger.info('Reached end of records.')
             break
 
-        logger.info('Harvested %s out of %s records', str(page * apiLimit) + '-' + str(page * apiLimit + apiLimit), str(max_r))
+        logger.info('Harvested %s out of %s records, found %i records', str(page * apiLimit) + '-' + str(page * apiLimit + apiLimit), str(max_r), len(r_list))
         page = page + 1
 
     if make_stats:
