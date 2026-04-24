@@ -33,7 +33,7 @@ def main():
                                        config['ORG_ALTNAME'])
 
     try:
-        adlib_harvester.harvest(rgraph, endpoint=config['SRC_URI'], database='ruben', make_stats=False, start_from_record=144500)
+        adlib_harvester.harvest(rgraph, endpoint=config['SRC_URI'], database='ruben', make_stats=False)
     except Exception as e:
         logger.error('Harvesting failed: %s', str(e))
     finally:

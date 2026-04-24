@@ -46,6 +46,7 @@ jobs:
         python src/workflow.py  
       env:
         LIMIT: ${{ inputs.limit }} 
+        MODIFIED_ON_OR_AFTER: ${{ inputs.modification }}
     - name: Upload data artifact
       uses: actions/upload-artifact@v7
       with:
