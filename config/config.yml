@@ -1,7 +1,8 @@
 # Linked Data 
 BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
+COLLECTION_ID: 'kc'
 
-# Kennisbank API 
+# Adlib API 
 SRC_URI: 'https://rcerijswijk.adlibhosting.com/api.wo2/wwwopac.ashx'
 
 # Organisatie

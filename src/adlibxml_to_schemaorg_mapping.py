@@ -28,12 +28,11 @@ BASIC_MAPPING_NL = {
     adlib_xpaths.DESCRIPTION_TEXT: SDO.description,
     adlib_xpaths.OBJECT_NAME_ITEM: SDO.name,
     adlib_xpaths.DIMENSION_FREE: SDO.size,
-    adlib_xpaths.OBJECT_NUMBER: SDO.identifier,
-    adlib_xpaths.PRODUCTION_DATE_END: SDO.dateCreated,
 }
 
 BASIC_MAPPING = {
     adlib_xpaths.PRODUCTION_DATE_END: SDO.dateCreated,
+    adlib_xpaths.OBJECT_NUMBER: SDO.identifier,
 }
 
 RIGHTS_MAPPING = {
@@ -55,8 +54,4 @@ DIMENSION_MAPPING = {
 
 REPRODUCTION_MAPPING = {
     adlib_xpaths.REPRODUCTION_REFERENCE: [SDO.associatedMedia, SDO.MediaObject, SDO.contentUrl, SDO.encodesCreativeWork]
-}
-
-PRODUCTION_MAPPING = {
-    adlib_xpaths.PRODUCTION_DATE_END: SDO.dateCreated
 }

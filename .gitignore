@@ -207,3 +207,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# user defined
+
+*.tar.gz
+*.jsonld
+*.sparql
+triplydb-macos

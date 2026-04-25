@@ -1,11 +1,9 @@
 import os
 import logging
 import datetime
-from rdflib import Graph
 import yaml
 import uritools
 import adlib_harvester
-import adlib_transformer
 
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 ENCODING = os.getenv('ENCODING', 'utf-8')
@@ -33,7 +31,7 @@ def main():
                                        config['ORG_ALTNAME'])
 
     try:
-        adlib_harvester.harvest(rgraph, endpoint=config['SRC_URI'], database='ruben', make_stats=False)
+        adlib_harvester.harvest(rgraph, endpoint=config['SRC_URI'], database='ruben')
     except Exception as e:
         logger.error('Harvesting failed: %s', str(e))
     finally:
