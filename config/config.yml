@@ -1,9 +1,13 @@
 # Linked Data 
 BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
 COLLECTION_ID: 'kc'
+ENRICH_TERMS: True
+USE_CHT_API: False
 
 # Adlib API 
 SRC_URI: 'https://rcerijswijk.adlibhosting.com/api.wo2/wwwopac.ashx'
+SRC_DB: 'ruben'
+SRC_API_LIMIT: 100
 
 # Organisatie
 ORG_URI: 'https://www.cultureelerfgoed.nl'

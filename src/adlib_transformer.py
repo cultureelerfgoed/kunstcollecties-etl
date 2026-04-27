@@ -8,6 +8,7 @@ import yaml
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import RDF, SDO, XSD
 import uritools
+from CHTService import CHTService
 import adlib_xpaths as xpath
 import adlib_tags as tags
 import adlibxml_to_schemaorg_mapping as map
@@ -50,20 +51,22 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     for key, ref in map.CHT_TERM_FIELD_MAPPING.items():
         for item in tree.findall(key):
             if item.text != None and item.text.strip() != '':
-                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], str(uuid.uuid4()), config['COLLECTION_ID'], map.CHT_TERM_TYPES[key][0]))
+                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], item.text, config['COLLECTION_ID'], map.CHT_TERM_TYPES[key][0]))
                 target_graph.add((record_object_node, ref, dt_url))
                 for item_type in map.CHT_TERM_TYPES[key]:
                     target_graph.add((dt_url, RDF.type, item_type))
                 target_graph.add((dt_url, SDO.name, Literal(item.text, lang='nl')))
-                term_uri = uritools.get_term_uri_from_cht(item.text)
-                if term_uri:
-                    target_graph.add((dt_url, SDO.sameAs, URIRef(term_uri)))
+                if config['ENRICH_TERMS']:
+                    cht = CHTService()
+                    term_uri = cht.get_term(item.text)
+                    if term_uri:
+                        target_graph.add((dt_url, SDO.sameAs, URIRef(term_uri)))
 
     # location created
     for key, ref in map.LOCATION_FIELDS.items():
         for item in tree.findall(key):
             if item.text != None and item.text.strip() != '':
-                loc_url = URIRef(uritools.get_object_uri(config['BASE_URI'], str(uuid.uuid4()), config['COLLECTION_ID'], ref[1]))
+                loc_url = URIRef(uritools.get_object_uri(config['BASE_URI'], item.text, config['COLLECTION_ID'], ref[1]))
                 target_graph.add((loc_url, RDF.type, ref[1]))
                 target_graph.add((loc_url, ref[0], Literal(item.text, lang='nl')))
 
@@ -159,17 +162,3 @@ def print_stats(base: dict[str, int]):
         if key == 'total_files_processed': continue
         percentage = (sorted_stats[key] / sorted_stats['total_files_processed']) * 100
         logger.info('Element %s occurred %i times (%i%%)', key, sorted_stats[key], percentage)
-
-def main():
-    """ main runner for workflow """
-    logging.basicConfig(
-        format='%(asctime)s %(levelname)-8s %(message)s',
-        level=logging.INFO,
-        datefmt='%Y-%m-%d %H:%M:%S')
-    
-    etree = ET.parse('data/output/rubenpriref24101.adlib.xml')
-    root = etree.find('.//record')
-    parse_tree_to_graph(Graph(), root)
-
-if __name__ == '__main__':
-    main()
