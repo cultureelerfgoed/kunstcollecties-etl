@@ -54,8 +54,8 @@ def main():
                                 endpoint=config['SRC_URI'], 
                                 database=config['SRC_DB'], 
                                 make_stats=False,
-                                start_from=0,
-                                end_at=100, 
+                                start_from=START_FROM,
+                                end_at=END_AT, 
                                 apilimit=config['SRC_API_LIMIT'])
     except Exception as e:
         logger.error('Harvesting failed: %s', str(e))
