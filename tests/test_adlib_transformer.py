@@ -3,7 +3,10 @@ import xml.etree.ElementTree as ET
 from rdflib.namespace import SDO
 from rdflib import Graph
 import yaml
-import src.adlib_transformer as adlib_transformer
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
+import adlib_transformer
 
 config = yaml.safe_load(open('config/config.yml', encoding='utf-8'))
 

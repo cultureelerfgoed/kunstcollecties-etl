@@ -1,9 +1,8 @@
 #! /usr/bin/env python3
 import urllib.request
-import os
 import logging
-from rdflib import Graph
 import xml.etree.ElementTree as ET
+from rdflib import Graph
 import adlib_transformer
 
 logger = logging.getLogger(__name__)

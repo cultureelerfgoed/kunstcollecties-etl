@@ -1,6 +1,6 @@
 from rdflib.namespace import SDO
 from rdflib import URIRef, Literal
-import src.adlib_xpaths as adlib_xpaths
+import adlib_xpaths
 
 RECORD_OBJECT_TYPES = [
     SDO.CreativeWork,

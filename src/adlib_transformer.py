@@ -9,10 +9,10 @@ import yaml
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import RDF, SDO, XSD
 import uritools
-from src.CHTService import CHTService
-import src.adlib_xpaths as xpath
-import src.adlib_tags as tags
-import src.adlibxml_to_schemaorg_mapping as mapping
+from CHTService import CHTService
+import adlib_xpaths as xpath
+import adlib_tags as tags
+import adlibxml_to_schemaorg_mapping as mapping
 
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 ENCODING = os.getenv('ENCODING', 'utf-8')
