@@ -38,11 +38,11 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
             logger.warning('Error while getting the page: %s', str(re))
 
         if len(r_list) > 0:
-            hits_found = root.find('.//hits')
-            if hits_found:
-                max_r = int(str(hits_found.text)) # get amount of hits from page containing records
-            else: 
-                max_r = -1 
+            hits = root.find('.//hits')
+            if hits is not None and hits.text is not None:
+                max_r = int(hits.text) # get amount of hits from page containing records
+            else:
+                max_r = 0
                 
             for record in r_list:
                 # parse adlibXML

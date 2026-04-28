@@ -4,7 +4,7 @@ env:
   BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
   ARTIFACT_PATH: 'artifact.tar.gz'
   GRAPH_ID: 'kunstcollecties-latest-graph'
-  DATASET_NAME: 'Kunstcollecties-Harvest'
+  DATASET_NAME: 'kunstcollecties-harvest'
 
 on:
   workflow_dispatch:

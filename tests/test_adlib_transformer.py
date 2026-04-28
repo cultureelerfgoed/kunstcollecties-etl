@@ -1,5 +1,5 @@
-import pytest
 import xml.etree.ElementTree as ET
+import pytest
 from rdflib.namespace import SDO
 from rdflib import Graph
 import yaml
@@ -25,7 +25,10 @@ def test_transform_valid():
     # get detailed information with priref
     graph = Graph()
     graph = adlib_transformer.parse_tree_to_graph(graph, root)
+    for triple in sorted(graph):
+        print(triple)
     assert len(list(graph.objects(None, SDO.sameAs))) == 1
+
 
 def test_transform_invalid():
     test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
