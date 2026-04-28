@@ -215,3 +215,5 @@ __marimo__/
 *.sparql
 triplydb-macos
 *.trig
+*.tar
+*.gz
