@@ -20,7 +20,7 @@ on:
           - overwrite
           - merge
         required: true
-        default: overwrite
+        default: merge
     
 jobs:
   harvest-and-transform:
