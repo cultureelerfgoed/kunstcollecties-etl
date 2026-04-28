@@ -1,26 +1,25 @@
 import os
 import logging
 import datetime
-import yaml
 import argparse
+import yaml
 import uritools
 from rdflib.namespace import SDO, RDF
 import adlib_harvester
 
-CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
-ENCODING = os.getenv('ENCODING', 'utf-8')
-GRAPH_ID = os.getenv('GRAPH_ID', 'default')
-ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
-OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
-START_FROM = int(os.getenv('START_FROM', '0'))
-END_AT = int(os.getenv('START_FROM', '200000'))
-
-
-config = yaml.safe_load(open(CONFIG_PATH, encoding=ENCODING))
-logger = logging.getLogger(__name__)
-
 def main():
     """ main runner for workflow """
+
+    CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
+    ENCODING = os.getenv('ENCODING', 'utf-8')
+    ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
+    OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
+    START_FROM = int(os.getenv('START_FROM', '0'))
+    END_AT = int(os.getenv('START_FROM', '200000'))
+
+    config = yaml.safe_load(open(CONFIG_PATH, encoding=ENCODING))
+    logger = logging.getLogger(__name__)
+
     logging.basicConfig(
         format='%(asctime)s %(levelname)-8s %(message)s',
         level=logging.INFO,

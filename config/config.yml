@@ -10,7 +10,7 @@ SRC_DB: 'ruben'
 SRC_API_LIMIT: 100
 
 # Organisatie
-ORG_URI: 'https://www.cultureelerfgoed.nl'
+ORG_URI: 'https://www.cultureelerfgoed.nl/'
 ORG_NAME: 'Rijksdienst voor het Cultureel Erfgoed'
 ORG_SAME_AS: 'https://standaarden.overheid.nl/owms/terms/Rijksdienst_voor_het_Cultureel_Erfgoed'
 ORG_CONTACT_NAME: 'Infodesk van de RCE'

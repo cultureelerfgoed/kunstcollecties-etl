@@ -39,14 +39,19 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
             logger.warning('Error while getting the page: %s', str(re))
 
         if len(r_list) > 0:
-            max_r = int(root.find('.//hits').text) # get amount of hits from page containing records
+            hits_found = root.find('.//hits')
+            if hits_found:
+                max_r = int(str(hits_found.text)) # get amount of hits from page containing records
+            else: 
+                max_r = -1 
+                
             for record in r_list:
                 # parse adlibXML
                 r_iter = r_iter + 1
                 try:
                     adlib_transformer.parse_tree_to_graph(target_graph, record)
                     if make_stats:
-                        stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(ET.tostring(record)))
+                        stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(str(ET.tostring(record))))
                 except (TypeError, AssertionError) as te:
                     logger.warning('Error during transformation: %s', te)
         else:

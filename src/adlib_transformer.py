@@ -4,14 +4,15 @@ from typing import Optional, Any
 import xml.etree.ElementTree as ET
 import uuid
 import os
+from urllib.parse import urlparse
 import yaml
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import RDF, SDO, XSD
 import uritools
-from CHTService import CHTService
-import adlib_xpaths as xpath
-import adlib_tags as tags
-import adlibxml_to_schemaorg_mapping as map
+from src.CHTService import CHTService
+import src.adlib_xpaths as xpath
+import src.adlib_tags as tags
+import src.adlibxml_to_schemaorg_mapping as mapping
 
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 ENCODING = os.getenv('ENCODING', 'utf-8')
@@ -32,28 +33,28 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     
     # adding required field isPartOf dataset reference
     target_graph.add((record_object_node, SDO.isPartOf, URIRef('https://linkeddata.cultureelerfgoed.nl/rce/datacatalog/Dataset/103')))
-    for rtype in map.RECORD_OBJECT_TYPES:
+    for rtype in mapping.RECORD_OBJECT_TYPES:
         target_graph.add((record_object_node, RDF.type, rtype))
 
     # first degree attributes with language tag 'nl'
-    for key, ref in map.BASIC_MAPPING_NL.items():
+    for key, ref in mapping.BASIC_MAPPING_NL.items():
         item_text = get_text_from_tree(tree, key)
         if item_text:
             target_graph.add((record_object_node, ref, Literal(item_text, lang='nl')))
 
     # first degree attributes
-    for key, ref in map.BASIC_MAPPING.items():
+    for key, ref in mapping.BASIC_MAPPING.items():
         item_text = get_text_from_tree(tree, key)
         if item_text:
             target_graph.add((record_object_node, ref, Literal(item_text)))
 
     # defined terms that might be enrichable via CHT
-    for key, ref in map.CHT_TERM_FIELD_MAPPING.items():
+    for key, ref in mapping.CHT_TERM_FIELD_MAPPING.items():
         for item in tree.findall(key):
             if item.text != None and item.text.strip() != '':
-                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], item.text, config['COLLECTION_ID'], map.CHT_TERM_TYPES[key][0]))
+                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], item.text, config['COLLECTION_ID'], mapping.CHT_TERM_TYPES[key][0]))
                 target_graph.add((record_object_node, ref, dt_url))
-                for item_type in map.CHT_TERM_TYPES[key]:
+                for item_type in mapping.CHT_TERM_TYPES[key]:
                     target_graph.add((dt_url, RDF.type, item_type))
                 target_graph.add((dt_url, SDO.name, Literal(item.text, lang='nl')))
                 if config['ENRICH_TERMS']:
@@ -63,7 +64,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
                         target_graph.add((dt_url, SDO.sameAs, URIRef(term_uri)))
 
     # location created
-    for key, ref in map.LOCATION_FIELDS.items():
+    for key, ref in mapping.LOCATION_FIELDS.items():
         for item in tree.findall(key):
             if item.text != None and item.text.strip() != '':
                 loc_url = URIRef(uritools.get_object_uri(config['BASE_URI'], item.text, config['COLLECTION_ID'], ref[1]))
@@ -74,19 +75,25 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], priref, config['COLLECTION_ID'], SDO.Person)
     target_graph.add((sdo_creator_node, RDF.type, SDO.Person))
     target_graph.add((record_object_node, SDO.creator, sdo_creator_node))
-    for key, ref in map.CREATOR_MAPPING.items():
+    for key, ref in mapping.CREATOR_MAPPING.items():
         item_text = get_text_from_tree(tree, key)
         if item_text:
-            target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
+            if ref[1] == URIRef:
+                # validate uri
+                uri_ref = urlparse(item_text.strip())
+                if (uri_ref.scheme != '' and uri_ref.netloc != ''):
+                    target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
+            else:
+                target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
 
     # Link to image of object at memorix based on reproduction reference
     for index, r_ref in enumerate(tree.findall(xpath.REPRODUCTION_REFERENCE)):
         if r_ref.text:
-            r_ref_node = uritools.get_object_uri(config['BASE_URI'], r_ref.text, config['COLLECTION_ID'], map.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1])
-            target_graph.add((r_ref_node, RDF.type, map.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1]))
-            target_graph.add((record_object_node, map.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][0], r_ref_node))
-            target_graph.add((r_ref_node, map.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][3], record_object_node))
-            target_graph.add((r_ref_node, map.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][2], uritools.get_memorix_uri_from_reference(r_ref.text)))
+            r_ref_node = uritools.get_object_uri(config['BASE_URI'], r_ref.text, config['COLLECTION_ID'], mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1])
+            target_graph.add((r_ref_node, RDF.type, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1]))
+            target_graph.add((record_object_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][0], r_ref_node))
+            target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][3], record_object_node))
+            target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][2], uritools.get_memorix_uri_from_reference(r_ref.text)))
 
     # Organization 
     target_graph.add((record_object_node, SDO.provider, URIRef(config['ORG_URI'])))
@@ -98,11 +105,11 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
 
         d_unit = next(dimension.iterfind(tags.DIMENSION_UNIT))
         if d_unit.text:
-            target_graph.add((qv_node, map.DIMENSION_MAPPING[xpath.DIMENSION_UNIT], Literal(d_unit.text)))
+            target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_UNIT], Literal(d_unit.text)))
         
         d_val = next(dimension.iterfind(tags.DIMENSION_VALUE))
         if d_val.text:
-            target_graph.add((qv_node, map.DIMENSION_MAPPING[xpath.DIMENSION_VALUE], Literal(d_val.text)))
+            target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_VALUE], Literal(d_val.text)))
         
         d_type = next(dimension.iterfind(tags.DIMENSION_TYPE))
         if d_type.text == 'hoogte':
