@@ -1,0 +1,136 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <http://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+:CreativeWorkShape
+    a sh:NodeShape ;
+    sh:targetClass schema:CreativeWork ;
+    sh:targetClass schema:ItemList ;
+    sh:targetClass schema:ArchiveComponent ;
+
+    #################################################
+    # Keuzeveld 1 (ERROR)
+    #################################################
+    sh:or (
+        [ sh:property [
+            sh:path schema:name ;
+            sh:minCount 1 ;
+        ]]
+        [ sh:property [
+            sh:path schema:additionalType ;
+            sh:minCount 1 ;
+            sh:nodeKind sh:IRI ;
+        ]]
+    ) ;
+    sh:severity sh:Violation ;
+    sh:message "Keuzeveld 1 (ERROR): voeg een titel (schema:name) of objecttype (schema:additionalType als URI) toe." ;
+
+    #################################################
+    # Afbeelding (WARNING)
+    #################################################
+    sh:property [
+        sh:path schema:associatedMedia ;
+        sh:node [
+            sh:property [
+                sh:path schema:contentUrl ;
+                sh:nodeKind sh:IRI ;
+                sh:minCount 1 ;
+                sh:message "WARNING: 'schema:contentUrl' (URL van afbeelding) ontbreekt bij associatedMedia." ;
+                sh:severity sh:Warning ;
+            ]
+        ] ;
+        sh:message "WARNING: voeg een afbeelding toe via schema:associatedMedia indien beschikbaar." ;
+        sh:severity sh:Warning ;
+    ] ;
+
+    #################################################
+    # Keuzeveld 2 (ERROR)
+    #################################################
+    sh:or (
+        [ sh:property [
+            sh:path schema:temporalCoverage ;
+            sh:datatype xsd:integer ;
+            sh:minCount 1 ;
+        ]]
+        [ sh:property [
+            sh:path schema:temporalCoverage ;
+            sh:datatype xsd:string ;
+            sh:minCount 1 ;
+        ]]
+    ) ;
+    sh:severity sh:Violation ;
+    sh:message "Keuzeveld 2 (ERROR): voeg een datering toe (numeriek of tekst via schema:temporalCoverage)." ;
+
+    #################################################
+    # Keuzeveld 3 (ERROR: minstens 2 velden)
+    #################################################
+    sh:property [
+        sh:path schema:material ;
+    ] ;
+    sh:property [
+        sh:path schema:size ;
+    ] ;
+    sh:property [
+        sh:path schema:creator ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+    ] ;
+    sh:property [
+        sh:path schema:locationCreated ;
+    ] ;
+
+    sh:qualifiedValueShape [
+        sh:or (
+            [ sh:path schema:material ]
+            [ sh:path schema:size ]
+            [ sh:path schema:creator ]
+            [ sh:path schema:description ]
+            [ sh:path schema:locationCreated ]
+        )
+    ] ;
+    sh:qualifiedMinCount 2 ;
+    sh:severity sh:Violation ;
+    sh:message "Keuzeveld 3 (ERROR): minstens twee van de velden material, size, creator, description, locationCreated moeten aanwezig zijn." ;
+
+    #################################################
+    # publisher (ERROR)
+    #################################################
+    sh:property [
+        sh:path schema:publisher ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "ERROR: 'schema:publisher' (instelling/dataprovider) is verplicht." ;
+    ] ;
+
+    #################################################
+    # license (ERROR)
+    #################################################
+    sh:property [
+        sh:path schema:license ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:severity sh:Violation ;
+        sh:message "ERROR: 'schema:license' is verplicht en moet een URI zijn." ;
+    ] ;
+
+    #################################################
+    # identifier (ERROR)
+    #################################################
+    sh:property [
+        sh:path schema:identifier ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "ERROR: 'schema:identifier' (PID of identificatie) is verplicht." ;
+    ] ;
+
+    #################################################
+    # Optioneel: landing page link (ERROR volgens jouw tabel)
+    #################################################
+    sh:property [
+        sh:path schema:url ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:severity sh:Violation ;
+        sh:message "ERROR: een URL naar de record bij de bronhouder (schema:url) is verplicht." ;
+    ] .
