@@ -77,9 +77,9 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
                 # validate uri
                 uri_ref = urlparse(item_text.strip())
                 if (uri_ref.scheme != '' and uri_ref.netloc != ''):
-                    target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), ref[2])))
+                    target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), datatype=ref[2])))
             else:
-                target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), ref[2])))
+                target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), datatype=ref[2])))
 
     # Link to image of object at memorix based on reproduction reference
     for index, r_ref in enumerate(tree.findall(xpath.REPRODUCTION_REFERENCE)):
@@ -91,7 +91,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
             target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][2], uritools.get_memorix_uri_from_reference(r_ref.text)))
 
     # Organization 
-    target_graph.add((record_object_node, SDO.provider, Literal(config['ORG_URI'], XSD.anyURI)))
+    target_graph.add((record_object_node, SDO.provider, Literal(config['ORG_URI'], datatype=XSD.anyURI)))
 
     # Dimensions
     for index, dimension in enumerate(tree.findall(xpath.DIMENSION)):
