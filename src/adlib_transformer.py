@@ -36,17 +36,11 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     for rtype in mapping.RECORD_OBJECT_TYPES:
         target_graph.add((record_object_node, RDF.type, rtype))
 
-    # first degree attributes with language tag 'nl'
-    for key, ref in mapping.BASIC_MAPPING_NL.items():
-        item_text = get_text_from_tree(tree, key)
-        if item_text:
-            target_graph.add((record_object_node, ref, Literal(item_text, lang='nl')))
-
     # first degree attributes
     for key, ref in mapping.BASIC_MAPPING.items():
         item_text = get_text_from_tree(tree, key)
         if item_text:
-            target_graph.add((record_object_node, ref, Literal(item_text)))
+            target_graph.add((record_object_node, ref[0], ref[1](item_text, datatype=ref[2])))
 
     # defined terms that might be enrichable via CHT
     for key, ref in mapping.CHT_TERM_FIELD_MAPPING.items():
@@ -56,12 +50,12 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
                 target_graph.add((record_object_node, ref, dt_url))
                 for item_type in mapping.CHT_TERM_TYPES[key]:
                     target_graph.add((dt_url, RDF.type, item_type))
-                target_graph.add((dt_url, SDO.name, Literal(item.text, lang='nl')))
+                target_graph.add((dt_url, SDO.name, Literal(item.text, datatype=XSD.string)))
                 if config['ENRICH_TERMS']:
                     cht = CHTService()
                     term_uri = cht.get_term(item.text)
                     if term_uri:
-                        target_graph.add((dt_url, SDO.sameAs, URIRef(term_uri)))
+                        target_graph.add((dt_url, SDO.sameAs, Literal(term_uri, datatype=XSD.anyURI)))
 
     # location created
     for key, ref in mapping.LOCATION_FIELDS.items():
@@ -73,18 +67,19 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
 
     # Creator
     sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], priref, SDO.Person)
+    # creators are always persons in current datamodel
     target_graph.add((sdo_creator_node, RDF.type, SDO.Person))
     target_graph.add((record_object_node, SDO.creator, sdo_creator_node))
     for key, ref in mapping.CREATOR_MAPPING.items():
         item_text = get_text_from_tree(tree, key)
         if item_text:
-            if ref[1] == URIRef:
+            if ref[2] == XSD.anyURI:
                 # validate uri
                 uri_ref = urlparse(item_text.strip())
                 if (uri_ref.scheme != '' and uri_ref.netloc != ''):
-                    target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
+                    target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), ref[2])))
             else:
-                target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
+                target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), ref[2])))
 
     # Link to image of object at memorix based on reproduction reference
     for index, r_ref in enumerate(tree.findall(xpath.REPRODUCTION_REFERENCE)):
@@ -96,7 +91,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
             target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][2], uritools.get_memorix_uri_from_reference(r_ref.text)))
 
     # Organization 
-    target_graph.add((record_object_node, SDO.provider, URIRef(config['ORG_URI'])))
+    target_graph.add((record_object_node, SDO.provider, Literal(config['ORG_URI'], XSD.anyURI)))
 
     # Dimensions
     for index, dimension in enumerate(tree.findall(xpath.DIMENSION)):
@@ -105,11 +100,11 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
 
         d_unit = next(dimension.iterfind(tags.DIMENSION_UNIT))
         if d_unit.text:
-            target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_UNIT], Literal(d_unit.text)))
+            target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_UNIT], Literal(d_unit.text, datatype=XSD.string)))
         
         d_val = next(dimension.iterfind(tags.DIMENSION_VALUE))
         if d_val.text:
-            target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_VALUE], Literal(d_val.text)))
+            target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_VALUE], Literal(d_val.text, datatype=XSD.string)))
         
         d_type = next(dimension.iterfind(tags.DIMENSION_TYPE))
         if d_type.text == 'hoogte':
@@ -126,7 +121,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
         if rholder_text:
             sdo_rholder_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], str(uuid.uuid4()), SDO.Person)
             target_graph.add((sdo_rholder_node, RDF.type, SDO.Person))
-            target_graph.add((sdo_rholder_node, SDO.name, Literal(rholder_text)))
+            target_graph.add((sdo_rholder_node, SDO.name, Literal(rholder_text, datatype=XSD.string)))
             target_graph.add((record_object_node, SDO.copyrightHolder, sdo_rholder_node))
 
     return target_graph

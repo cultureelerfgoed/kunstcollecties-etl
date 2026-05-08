@@ -1,4 +1,4 @@
-from rdflib.namespace import SDO
+from rdflib.namespace import SDO, XSD
 from rdflib import URIRef, Literal
 import adlib_xpaths
 
@@ -24,15 +24,12 @@ LOCATION_FIELDS = {
     adlib_xpaths.PRODUCTION_PLACE: [SDO.locationCreated, SDO.Place],
 }
 
-BASIC_MAPPING_NL = {
-    adlib_xpaths.DESCRIPTION_TEXT: SDO.description,
-    adlib_xpaths.OBJECT_NAME_ITEM: SDO.name,
-    adlib_xpaths.DIMENSION_FREE: SDO.size,
-}
-
 BASIC_MAPPING = {
-    adlib_xpaths.PRODUCTION_DATE_END: SDO.dateCreated,
-    adlib_xpaths.OBJECT_NUMBER: SDO.identifier,
+    adlib_xpaths.DESCRIPTION_TEXT: [SDO.description, Literal, XSD.string],
+    adlib_xpaths.OBJECT_NAME_ITEM: [SDO.description, Literal, XSD.string],
+    adlib_xpaths.DIMENSION_FREE: [SDO.description, Literal, XSD.string],
+    adlib_xpaths.PRODUCTION_DATE_END: [SDO.dateCreated, Literal, XSD.string],
+    adlib_xpaths.OBJECT_NUMBER: [SDO.identifier, Literal, XSD.string],
 }
 
 RIGHTS_MAPPING = {
@@ -40,11 +37,11 @@ RIGHTS_MAPPING = {
 }
 
 CREATOR_MAPPING = {
-    adlib_xpaths.CREATOR_NAME: [SDO.name, Literal], 
-    adlib_xpaths.RKDARTISTS: [SDO.sameAs, URIRef], 
-    adlib_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, Literal],
-    adlib_xpaths.CREATOR_DATE_OF_BIRTH: [SDO.birthDate, Literal],
-    adlib_xpaths.CREATOR_ROLE: [SDO.hasOccupation, Literal],
+    adlib_xpaths.CREATOR_NAME: [SDO.name, Literal, XSD.string], 
+    adlib_xpaths.RKDARTISTS: [SDO.sameAs, Literal, XSD.anyURI], 
+    adlib_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, Literal, XSD.string],
+    adlib_xpaths.CREATOR_DATE_OF_BIRTH: [SDO.birthDate, Literal, XSD.string],
+    adlib_xpaths.CREATOR_ROLE: [SDO.hasOccupation, Literal, XSD.string],
 }
 
 DIMENSION_MAPPING = {
