@@ -1,6 +1,6 @@
 # Linked Data 
 BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
-COLLECTION_ID: 'kc'
+COLLECTION_ID: 'kunstcollecties-harvest'
 ENRICH_TERMS: True
 USE_CHT_API: False
 

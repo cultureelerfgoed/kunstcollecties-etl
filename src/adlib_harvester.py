@@ -56,7 +56,7 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
         else:
             break
 
-        logger.info('Harvested %s out of %s records, found %i records on page, harvested %i total', str(page * apilimit) + '-' + str(page * apilimit + apilimit), str(max_r), len(r_list), r_iter - start_from)
+        logger.debug('Harvested %s out of %s records, found %i records on page, harvested %i total', str(page * apilimit) + '-' + str(page * apilimit + apilimit), str(max_r), len(r_list), r_iter - start_from)
         page = page + 1
 
     if make_stats:
