@@ -2,7 +2,7 @@
 BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
 COLLECTION_ID: 'kunstcollecties-harvest'
 ENRICH_TERMS: True
-USE_CHT_API: False
+USE_CHT_API: True
 
 # Adlib API 
 SRC_URI: 'https://rcerijswijk.adlibhosting.com/api.wo2/wwwopac.ashx'
