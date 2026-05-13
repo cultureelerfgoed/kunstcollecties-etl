@@ -1,7 +1,7 @@
 # Linked Data 
 BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
 ENRICH_TERMS: True
-USE_CHT_API: True
+USE_CHT_API: False
 
 # Adlib API 
 SRC_URI: 'https://rcerijswijk.adlibhosting.com/api.wo2/wwwopac.ashx'
