@@ -16,6 +16,7 @@ import adlibxml_to_schemaorg_mapping as mapping
 
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 ENCODING = os.getenv('ENCODING', 'utf-8')
+COLLECTION_ID = 'rce/' + os.getenv('COLLECTION_ID', 'kunstcollecties-harvest')
 MODIFIED_ON_OR_AFTER = datetime.datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970-01-01'), '%Y-%m-%d')
 
 config = yaml.safe_load(open(CONFIG_PATH, encoding=ENCODING))
@@ -26,7 +27,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     priref = get_text_from_tree(tree, xpath.PRIREF)
     mod_dt = datetime.datetime.strptime(tree.attrib['modification'], '%Y-%m-%dT%H:%M:%S')
     if priref and mod_dt >= MODIFIED_ON_OR_AFTER:
-        record_object_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], priref, SDO.CreativeWork)
+        record_object_node = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, priref, SDO.CreativeWork)
         target_graph.add((record_object_node, SDO.sdDatePublished, Literal(mod_dt, datatype=XSD.dateTime)))
     else:
         return target_graph
@@ -42,11 +43,20 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
         if item_text:
             target_graph.add((record_object_node, ref[0], ref[1](item_text, datatype=ref[2])))
 
+    for key, ref in mapping.PROPERTY_VALUE_MAPPING.items():
+        item_text = get_text_from_tree(tree, key)
+        if item_text:
+            property_node = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, priref, SDO.PropertyValue)
+            target_graph.add((property_node, RDF.type, SDO.PropertyValue))
+            target_graph.add((property_node, SDO.value, Literal(item_text, datatype=XSD.string)))
+            target_graph.add((property_node, SDO.propertyID, ref[0]))
+            target_graph.add((property_node, SDO.description, Literal(ref[1], datatype=XSD.string)))
+
     # defined terms that might be enrichable via CHT
     for key, ref in mapping.CHT_TERM_FIELD_MAPPING.items():
         for item in tree.findall(key):
             if item.text != None and item.text.strip() != '':
-                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], item.text,  mapping.CHT_TERM_TYPES[key][0]))
+                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, item.text,  mapping.CHT_TERM_TYPES[key][0]))
                 target_graph.add((record_object_node, ref, dt_url))
                 for item_type in mapping.CHT_TERM_TYPES[key]:
                     target_graph.add((dt_url, RDF.type, item_type))
@@ -61,12 +71,12 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     for key, ref in mapping.LOCATION_FIELDS.items():
         for item in tree.findall(key):
             if item.text != None and item.text.strip() != '':
-                loc_url = URIRef(uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], item.text, ref[1]))
+                loc_url = URIRef(uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, item.text, ref[1]))
                 target_graph.add((loc_url, RDF.type, ref[1]))
                 target_graph.add((loc_url, ref[0], Literal(item.text, lang='nl')))
 
     # Creator
-    sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], priref, SDO.Person)
+    sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, priref, SDO.Person)
     # creators are always persons in current datamodel
     target_graph.add((sdo_creator_node, RDF.type, SDO.Person))
     target_graph.add((record_object_node, SDO.creator, sdo_creator_node))
@@ -84,7 +94,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     # Link to image of object at memorix based on reproduction reference
     for index, r_ref in enumerate(tree.findall(xpath.REPRODUCTION_REFERENCE)):
         if r_ref.text:
-            r_ref_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], r_ref.text, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1])
+            r_ref_node = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, r_ref.text, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1])
             target_graph.add((r_ref_node, RDF.type, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1]))
             target_graph.add((record_object_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][0], r_ref_node))
             target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][3], record_object_node))
@@ -95,7 +105,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
 
     # Dimensions
     for index, dimension in enumerate(tree.findall(xpath.DIMENSION)):
-        qv_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], str(uuid.uuid4()), SDO.QuantitativeValue)
+        qv_node = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, str(uuid.uuid4()), SDO.QuantitativeValue)
         target_graph.add((qv_node, RDF.type, SDO.QuantitativeValue))
 
         d_unit = next(dimension.iterfind(tags.DIMENSION_UNIT))
@@ -119,7 +129,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
 
         rholder_text = get_text_from_tree(tree, xpath.RIGHTS_HOLDER)
         if rholder_text:
-            sdo_rholder_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], str(uuid.uuid4()), SDO.Person)
+            sdo_rholder_node = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, str(uuid.uuid4()), SDO.Person)
             target_graph.add((sdo_rholder_node, RDF.type, SDO.Person))
             target_graph.add((sdo_rholder_node, SDO.name, Literal(rholder_text, datatype=XSD.string)))
             target_graph.add((record_object_node, SDO.copyrightHolder, sdo_rholder_node))

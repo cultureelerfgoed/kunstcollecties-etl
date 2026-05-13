@@ -12,14 +12,15 @@ config = yaml.safe_load(open('config/config.yml', encoding='utf-8'))
 
 def test_transform_valid():
     test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
-                                                                                                            '<priref>98500</priref>' \
-                                                                                                            '<Production>' \
-                                                                                                            '<creator>' \
-                                                                                                            '<name>onbekend</name>' \
-                                                                                                            '</creator>' \
-                                                                                                            '<rkdartists>https://rkd.nl/artists/337566</rkdartists>' \
-                                                                                                            '</Production>' \
-                                                                                                            '</record>' 
+        '<priref>98500</priref>' \
+        '<object_number>aa111</object_number>' \
+        '<Production>' \
+        '<creator>' \
+        '<name>onbekend</name>' \
+        '</creator>' \
+        '<rkdartists>https://rkd.nl/artists/337566</rkdartists>' \
+        '</Production>' \
+        '</record>' 
     root = ET.fromstring(test_xml)
     print(f'element: {str(root.attrib)}')
     # get detailed information with priref
@@ -32,14 +33,14 @@ def test_transform_valid():
 
 def test_transform_invalid():
     test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
-                                                                                                            '<priref>98500</priref>' \
-                                                                                                            '<Production>' \
-                                                                                                            '<creator>' \
-                                                                                                            '<name>onbekend</name>' \
-                                                                                                            '</creator>' \
-                                                                                                            '<rkdartists>0000 0000 8225 9251</rkdartists>' \
-                                                                                                            '</Production>' \
-                                                                                                            '</record>' 
+        '<priref>98500</priref>' \
+        '<Production>' \
+        '<creator>' \
+        '<name>onbekend</name>' \
+        '</creator>' \
+        '<rkdartists>0000 0000 8225 9251</rkdartists>' \
+        '</Production>' \
+        '</record>' 
     root = ET.fromstring(test_xml)
     # get detailed information with priref
     graph = Graph()

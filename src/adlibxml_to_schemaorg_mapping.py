@@ -1,5 +1,5 @@
 from rdflib.namespace import SDO, XSD
-from rdflib import URIRef, Literal
+from rdflib import Literal
 import adlib_xpaths
 
 RECORD_OBJECT_TYPES = [
@@ -22,6 +22,11 @@ CHT_TERM_FIELD_MAPPING = {
 
 LOCATION_FIELDS = {
     adlib_xpaths.PRODUCTION_PLACE: [SDO.locationCreated, SDO.Place],
+}
+
+# PropertyValue mapping: map field a: [b, c] to SDO.value [a], SDO.propertyID [b], SDO.description [c], 
+PROPERTY_VALUE_MAPPING = {
+    adlib_xpaths.OBJECT_NUMBER: [SDO.identifier, 'object_number']
 }
 
 BASIC_MAPPING = {
