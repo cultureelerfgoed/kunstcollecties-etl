@@ -29,6 +29,7 @@ def test_transform_valid():
     for triple in sorted(graph):
         print(triple)
     assert len(list(graph.objects(None, SDO.sameAs))) == 1
+    assert len(list(graph.objects(None, SDO.propertyID))) == 1
 
 
 def test_transform_invalid():
@@ -42,7 +43,7 @@ def test_transform_invalid():
         '</Production>' \
         '</record>' 
     root = ET.fromstring(test_xml)
-    # get detailed information with priref
+    # get detailed information with priref 
     graph = Graph()
     adlib_transformer.parse_tree_to_graph(graph, root)
     assert len(list(graph.objects(None, SDO.sameAs))) == 0

@@ -26,7 +26,7 @@ LOCATION_FIELDS = {
 
 # PropertyValue mapping: map field a: [b, c] to SDO.value [a], SDO.propertyID [b], SDO.description [c], 
 PROPERTY_VALUE_MAPPING = {
-    adlib_xpaths.OBJECT_NUMBER: [SDO.identifier, 'object_number']
+    adlib_xpaths.OBJECT_NUMBER: [SDO.identifier, 'AdlibXML object_number']
 }
 
 BASIC_MAPPING = {
@@ -34,7 +34,6 @@ BASIC_MAPPING = {
     adlib_xpaths.OBJECT_NAME_ITEM: [SDO.description, Literal, XSD.string],
     adlib_xpaths.DIMENSION_FREE: [SDO.description, Literal, XSD.string],
     adlib_xpaths.PRODUCTION_DATE_END: [SDO.dateCreated, Literal, XSD.string],
-    adlib_xpaths.OBJECT_NUMBER: [SDO.identifier, Literal, XSD.string],
 }
 
 RIGHTS_MAPPING = {

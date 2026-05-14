@@ -51,6 +51,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
             target_graph.add((property_node, SDO.value, Literal(item_text, datatype=XSD.string)))
             target_graph.add((property_node, SDO.propertyID, ref[0]))
             target_graph.add((property_node, SDO.description, Literal(ref[1], datatype=XSD.string)))
+            target_graph.add((record_object_node, SDO.identifier, property_node))
 
     # defined terms that might be enrichable via CHT
     for key, ref in mapping.CHT_TERM_FIELD_MAPPING.items():
