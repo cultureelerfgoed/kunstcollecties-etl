@@ -131,12 +131,12 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
             target_graph.add((qv_node, SDO.valueReference, Literal('diepte', lang='nl')))
             target_graph.add((record_object_node, SDO.depth, qv_node))
 
-        rholder_text = get_text_from_tree(tree, xpath.RIGHTS_HOLDER)
-        if rholder_text:
-            sdo_rholder_node = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, str(uuid.uuid4()), SDO.Person)
-            target_graph.add((sdo_rholder_node, RDF.type, SDO.Person))
-            target_graph.add((sdo_rholder_node, SDO.name, Literal(rholder_text, datatype=XSD.string)))
-            target_graph.add((record_object_node, SDO.copyrightHolder, sdo_rholder_node))
+    rholder_text = get_text_from_tree(tree, xpath.RIGHTS_HOLDER)
+    if rholder_text:
+        sdo_rholder_node = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, str(uuid.uuid4()), SDO.Person)
+        target_graph.add((sdo_rholder_node, RDF.type, SDO.Person))
+        target_graph.add((sdo_rholder_node, SDO.name, Literal(rholder_text, datatype=XSD.string)))
+        target_graph.add((record_object_node, SDO.copyrightHolder, sdo_rholder_node))
 
     return target_graph
 
