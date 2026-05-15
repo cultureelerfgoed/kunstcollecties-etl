@@ -14,7 +14,7 @@ def test_transform_valid():
     test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
         '<priref>98500</priref>' \
         '<object_number>aa111</object_number>' \
-        '<object_category>waterverf</object_category>' \
+        '<object_category>olieverf</object_category>' \
         '<Production>' \
         '<creator>' \
         '<name>onbekend</name>' \

@@ -9,7 +9,6 @@ import yaml
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import RDF, SDO, XSD
 import uritools
-from CHTService import CHTService
 import adlib_xpaths as xpath
 import adlib_tags as tags
 import adlibxml_to_schemaorg_mapping as mapping
@@ -63,8 +62,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
                     target_graph.add((dt_url, RDF.type, item_type))
                 target_graph.add((dt_url, SDO.name, Literal(item.text, datatype=XSD.string)))
                 if config['ENRICH_TERMS']:
-                    cht = CHTService()
-                    term_uri = cht.get_term(item.text)
+                    term_uri = uritools.get_term_uri_from_cht(item.text)
                     if term_uri:
                         target_graph.add((dt_url, SDO.sameAs, Literal(term_uri, datatype=XSD.anyURI)))
                         logger.debug('Term URI found for %s, %s', item.text, term_uri)
