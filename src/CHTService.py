@@ -1,5 +1,6 @@
 import os
 from typing import Optional
+import logging
 import uritools
 import yaml
 from rdflib import Graph, Literal
@@ -10,6 +11,7 @@ CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 ENCODING = os.getenv('ENCODING', 'utf-8')
 
 config = yaml.safe_load(open(CONFIG_PATH, encoding=ENCODING))
+logger = logging.getLogger(__name__)
 
 @singleton
 class CHTService:
@@ -20,6 +22,7 @@ class CHTService:
         if not config['USE_CHT_API']:
             self.cht_graph = Graph()
             self.cht_graph.parse('cht.trig')
+            logger.info('Loaded %i triples from CHT.', len(self.cht_graph))
 
     def get_term(self, term: str) -> Optional[str]:
         if config['USE_CHT_API']:

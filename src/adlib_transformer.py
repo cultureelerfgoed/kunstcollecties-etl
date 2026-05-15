@@ -67,12 +67,15 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
                     term_uri = cht.get_term(item.text)
                     if term_uri:
                         target_graph.add((dt_url, SDO.sameAs, Literal(term_uri, datatype=XSD.anyURI)))
+                        logger.debug('Term URI found for %s, %s', item.text, term_uri)
+                    else:
+                        logger.debug('No term URI found for %s', item.text)
 
     # location created
     for key, ref in mapping.LOCATION_FIELDS.items():
         for item in tree.findall(key):
             if item.text != None and item.text.strip() != '':
-                loc_url = URIRef(uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, item.text, ref[1]))
+                loc_url = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, item.text, ref[1])
                 target_graph.add((loc_url, RDF.type, ref[1]))
                 target_graph.add((loc_url, ref[0], Literal(item.text, lang='nl')))
 
