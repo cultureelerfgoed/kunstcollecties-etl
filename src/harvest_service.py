@@ -52,12 +52,15 @@ def main():
                                     start_from=index*CHUNK_SIZE,
                                     end_at=(index+1)*CHUNK_SIZE, 
                                     apilimit=config['SRC_API_LIMIT'])
+            records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
+            if records == 0:
+                logger.info('Reached end of records from source API, exiting..')
+                break
         except Exception as e:
             logger.error('Harvesting failed: %s', str(e))
         finally:
             b = datetime.datetime.now().replace(microsecond=0)
             dt = b-a
-            records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
             dt_avg = (dt/records) / datetime.timedelta(milliseconds=1) 
             logger.info('Finished after %s, average time spent per record %s ms.', str(dt), str(dt_avg))
             path = f'kc-pt-{index}.jsonld'
