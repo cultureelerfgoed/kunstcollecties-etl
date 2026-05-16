@@ -21,14 +21,16 @@ def test_transform_valid():
         '</creator>' \
         '<rkdartists>https://rkd.nl/artists/337566</rkdartists>' \
         '</Production>' \
+        '<Rights><rights.holder>Gijzen, W.F.</rights.holder></Rights>' \
+        '<Reproduction><reproduction.reference>37d77ebb-3c6c-d691-884e-75cdf50125f7</reproduction.reference></Reproduction>' \
         '</record>' 
     root = ET.fromstring(test_xml)
     print(f'element: {str(root.attrib)}')
     # get detailed information with priref
     graph = Graph()
     graph = adlib_transformer.parse_tree_to_graph(graph, root)
-    for triple in sorted(graph):
-        print(triple)
+    for s, p, o in sorted(graph):
+        print(f'{s} \n {p} \n {o}')
     assert len(list(graph.objects(None, SDO.sameAs))) == 2
     assert len(list(graph.objects(None, SDO.propertyID))) == 1
 

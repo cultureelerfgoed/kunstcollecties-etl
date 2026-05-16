@@ -52,7 +52,7 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
                     if make_stats:
                         stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(str(ET.tostring(record))))
                 except (TypeError, AssertionError) as te:
-                    logger.warning('Error during transformation: %s', te)
+                    logger.warning('Error during transformation: %s', te.with_traceback())
         else:
             break
 
