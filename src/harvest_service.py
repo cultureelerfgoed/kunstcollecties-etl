@@ -35,15 +35,14 @@ def main():
     if args.chunks:
         CHUNK_SIZE = args.chunks
     
-    rgraph = uritools.get_organization(config['ORG_URI'], 
+    for index in range(0, int(MAX_RECORDS/CHUNK_SIZE)):
+        rgraph = uritools.get_organization(config['ORG_URI'], 
                                        config['ORG_NAME'], 
                                        config['ORG_SAME_AS'],
                                        config['ORG_CONTACT_NAME'],
                                        config['ORG_CONTACT_EMAIL'],
                                        config['ORG_ISIL'],
                                        config['ORG_ALTNAME'])
-
-    for index in range(0, int(MAX_RECORDS/CHUNK_SIZE)):
         a = datetime.datetime.now().replace(microsecond=0)
         try:
             adlib_harvester.harvest(rgraph, 
