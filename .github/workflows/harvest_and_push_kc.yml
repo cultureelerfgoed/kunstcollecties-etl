@@ -17,7 +17,8 @@ on:
       modification:
         description: 'Harvested records must have been modified on or after supplied ISO-8601 date.'
         required: false
-        type: string     
+        type: string
+        default: '1970-01-01'     
     
 jobs:
   harvest-and-transform:
