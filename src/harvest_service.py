@@ -12,7 +12,6 @@ def main():
 
     CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
     ENCODING = os.getenv('ENCODING', 'utf-8')
-    ARTIFACT_PATH = os.getenv('ARTIFACT_PATH', 'kc.jsonld')
     OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
 
     # default chunks
