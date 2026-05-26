@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 import urllib.request
 import logging
+import traceback
 import xml.etree.ElementTree as ET
 from rdflib import Graph
 import adlib_transformer
@@ -35,7 +36,7 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
             # get detailed information with priref
             r_list = root.findall('.//record')
         except (TimeoutError, OSError) as re:
-            logger.warning('Error while getting the page: %s', str(re))
+            logger.warning('Error while getting the page: %s', str(traceback.format_exception(re)))
 
         if len(r_list) > 0:
             hits = root.find('.//hits')
@@ -51,8 +52,8 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
                     adlib_transformer.parse_tree_to_graph(target_graph, record)
                     if make_stats:
                         stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(str(ET.tostring(record))))
-                except (TypeError, AssertionError) as te:
-                    logger.warning('Error during transformation: %s', te.with_traceback())
+                except (AssertionError, TypeError) as te:
+                    logger.warning('Error during transformation: %s', str(traceback.format_exception(te)))
         else:
             break
 

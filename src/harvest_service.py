@@ -1,4 +1,5 @@
 import os
+import traceback
 import logging
 import datetime
 import argparse
@@ -15,7 +16,7 @@ def main():
     OUTPUT_FILE_FORMAT = os.getenv('OUTPUT_FILE_FORMAT', 'json-ld')
 
     # default chunks
-    CHUNK_SIZE = 10000
+    CHUNK_SIZE = 8000
     MAX_RECORDS = 200000
     #
 
@@ -34,7 +35,7 @@ def main():
     if args.chunks:
         CHUNK_SIZE = args.chunks
     
-    for index in range(0, int(MAX_RECORDS/CHUNK_SIZE)):
+    for index in range(18, int(MAX_RECORDS/CHUNK_SIZE)):
         records = 0
         rgraph = uritools.get_organization(config['ORG_URI'], 
                                        config['ORG_NAME'], 
@@ -54,8 +55,8 @@ def main():
                                     apilimit=config['SRC_API_LIMIT'])
             records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
             
-        except Exception as e:
-            logger.error('Harvesting failed: %s', str(e))
+        except AssertionError as e:
+            logger.error('Harvesting failed: %s', str(traceback.format_exception(e)))
         finally:
             if records == 0:
                 logger.info('Reached end of records from source API, exiting..')
@@ -63,7 +64,7 @@ def main():
             else:
                 b = datetime.datetime.now().replace(microsecond=0)
                 dt = b-a
-                dt_avg = (dt/records) / datetime.timedelta(milliseconds=1) 
+                dt_avg = (dt/records) / datetime.timedelta(milliseconds=1)
                 logger.info('Finished after %s, average time spent per record %s ms.', str(dt), str(dt_avg))
                 path = f'kc-pt-{index}.jsonld'
                 logger.info('Writing  %s', f'{OUTPUT_FILE_FORMAT} file to {path}')
