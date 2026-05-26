@@ -35,7 +35,7 @@ def main():
     if args.chunks:
         CHUNK_SIZE = args.chunks
     
-    for index in range(18, int(MAX_RECORDS/CHUNK_SIZE)):
+    for index in range(0, int(MAX_RECORDS/CHUNK_SIZE)):
         records = 0
         rgraph = uritools.get_organization(config['ORG_URI'], 
                                        config['ORG_NAME'], 
