@@ -36,6 +36,7 @@ def main():
         CHUNK_SIZE = args.chunks
     
     for index in range(0, int(MAX_RECORDS/CHUNK_SIZE)):
+        records = 0
         rgraph = uritools.get_organization(config['ORG_URI'], 
                                        config['ORG_NAME'], 
                                        config['ORG_SAME_AS'],
@@ -53,23 +54,25 @@ def main():
                                     end_at=(index+1)*CHUNK_SIZE, 
                                     apilimit=config['SRC_API_LIMIT'])
             records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
-            if records == 0:
-                logger.info('Reached end of records from source API, exiting..')
-                break
+            
         except Exception as e:
             logger.error('Harvesting failed: %s', str(e))
         finally:
-            b = datetime.datetime.now().replace(microsecond=0)
-            dt = b-a
-            dt_avg = (dt/records) / datetime.timedelta(milliseconds=1) 
-            logger.info('Finished after %s, average time spent per record %s ms.', str(dt), str(dt_avg))
-            path = f'kc-pt-{index}.jsonld'
-            logger.info('Writing  %s', f'{OUTPUT_FILE_FORMAT} file to {path}')
-            rgraph.serialize(format=OUTPUT_FILE_FORMAT, 
-                            destination=path, 
-                            encoding=ENCODING, 
-                            auto_compact=True)  
-            logger.info("Filesize:  %s", f"{(os.path.getsize(path) / 1000)} KB")
+            if records == 0:
+                logger.info('Reached end of records from source API, exiting..')
+                break
+            else:
+                b = datetime.datetime.now().replace(microsecond=0)
+                dt = b-a
+                dt_avg = (dt/records) / datetime.timedelta(milliseconds=1) 
+                logger.info('Finished after %s, average time spent per record %s ms.', str(dt), str(dt_avg))
+                path = f'kc-pt-{index}.jsonld'
+                logger.info('Writing  %s', f'{OUTPUT_FILE_FORMAT} file to {path}')
+                rgraph.serialize(format=OUTPUT_FILE_FORMAT, 
+                                destination=path, 
+                                encoding=ENCODING, 
+                                auto_compact=True)  
+                logger.info("Filesize:  %s", f"{(os.path.getsize(path) / 1000)} KB")
 
 if __name__ == '__main__':
     main()
