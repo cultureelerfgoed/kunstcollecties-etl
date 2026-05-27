@@ -17,8 +17,8 @@ def main():
 
     # default chunks
     CHUNK_SIZE = 8000
+    # hard limit for records
     MAX_RECORDS = 200000
-    #
 
     config = yaml.safe_load(open(CONFIG_PATH, encoding=ENCODING))
     logger = logging.getLogger(__name__)
@@ -38,12 +38,12 @@ def main():
     for index in range(0, int(MAX_RECORDS/CHUNK_SIZE)):
         records = 0
         rgraph = uritools.get_organization(config['ORG_URI'], 
-                                       config['ORG_NAME'], 
-                                       config['ORG_SAME_AS'],
-                                       config['ORG_CONTACT_NAME'],
-                                       config['ORG_CONTACT_EMAIL'],
-                                       config['ORG_ISIL'],
-                                       config['ORG_ALTNAME'])
+                                            config['ORG_NAME'], 
+                                            config['ORG_SAME_AS'],
+                                            config['ORG_CONTACT_NAME'],
+                                            config['ORG_CONTACT_EMAIL'],
+                                            config['ORG_ISIL'],
+                                            config['ORG_ALTNAME'])
         a = datetime.datetime.now().replace(microsecond=0)
         try:
             adlib_harvester.harvest(rgraph, 
@@ -57,22 +57,22 @@ def main():
             
         except AssertionError as e:
             logger.error('Harvesting failed: %s', str(traceback.format_exception(e)))
-        finally:
-            if records == 0:
-                logger.info('Reached end of records from source API, exiting..')
-                break
-            else:
-                b = datetime.datetime.now().replace(microsecond=0)
-                dt = b-a
-                dt_avg = (dt/records) / datetime.timedelta(milliseconds=1)
-                logger.info('Finished after %s, average time spent per record %s ms.', str(dt), str(dt_avg))
-                path = f'kc-pt-{index}.jsonld'
-                logger.info('Writing  %s', f'{OUTPUT_FILE_FORMAT} file to {path}')
-                rgraph.serialize(format=OUTPUT_FILE_FORMAT, 
-                                destination=path, 
-                                encoding=ENCODING, 
-                                auto_compact=True)  
-                logger.info("Filesize:  %s", f"{(os.path.getsize(path) / 1000)} KB")
+        
+        if records == 0:
+            logger.info('Reached end of records from source API, exiting..')
+            break
+        else:
+            b = datetime.datetime.now().replace(microsecond=0)
+            dt = b-a
+            dt_avg = (dt/records) / datetime.timedelta(milliseconds=1)
+            logger.info('Finished after %s, average time spent per record %s ms.', str(dt), str(dt_avg))
+            path = f'kc-pt-{index}.jsonld'
+            logger.info('Writing  %s', f'{OUTPUT_FILE_FORMAT} file to {path}')
+            rgraph.serialize(format=OUTPUT_FILE_FORMAT, 
+                            destination=path, 
+                            encoding=ENCODING, 
+                            auto_compact=True)  
+            logger.info("Filesize:  %s", f"{(os.path.getsize(path) / 1000)} KB")
 
 if __name__ == '__main__':
     main()

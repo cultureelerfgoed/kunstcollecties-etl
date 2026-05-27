@@ -14,11 +14,10 @@ import adlib_tags as tags
 import adlibxml_to_schemaorg_mapping as mapping
 
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
-ENCODING = os.getenv('ENCODING', 'utf-8')
 COLLECTION_ID = 'rce/' + os.getenv('COLLECTION_ID', 'kunstcollecties-harvest')
 MODIFIED_ON_OR_AFTER = datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970-01-01'), '%Y-%m-%d')
 
-config = yaml.safe_load(open(CONFIG_PATH, encoding=ENCODING))
+config = yaml.safe_load(open(CONFIG_PATH))
 logger = logging.getLogger(__name__)
 
 def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
@@ -36,7 +35,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
         return target_graph
     
     # adding required field isPartOf dataset reference
-    dataset_node = uritools.get_object_uri(config['BASE_URI'], 'rce/datacatalog', 'https://linkeddata.cultureelerfgoed.nl/rce/datacatalog/Dataset/103', SDO.Dataset)
+    dataset_node = uritools.get_object_uri(config['BASE_URI'], 'rce/datacatalog', 'https://kennis.cultureelerfgoed.nl/index.php/Dataset/103', SDO.Dataset)
     target_graph.add((record_object_node, SDO.isPartOf, dataset_node))
 
     # add record types from mapping
@@ -61,12 +60,12 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
             target_graph.add((record_object_node, SDO.identifier, property_node))
 
     # add defined terms, if configured enrich via CHT
-    for key, ref in mapping.CHT_TERM_FIELD_MAPPING.items():
+    for key, ref in mapping.DEFINED_TERM_FIELD_MAPPING.items():
         for item in tree.findall(key):
             if item.text != None and item.text.strip() != '':
-                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, item.text,  mapping.CHT_TERM_TYPES[key][0]))
+                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, item.text,  mapping.DEFINED_TERM_TYPES[key][0]))
                 target_graph.add((record_object_node, ref, dt_url))
-                for item_type in mapping.CHT_TERM_TYPES[key]:
+                for item_type in mapping.DEFINED_TERM_TYPES[key]:
                     target_graph.add((dt_url, RDF.type, item_type))
                 target_graph.add((dt_url, SDO.name, Literal(item.text, datatype=XSD.string)))
                 if config['ENRICH_TERMS']:

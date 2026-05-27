@@ -33,7 +33,10 @@ def test_transform_valid():
     graph = adlib_transformer.parse_tree_to_graph(graph, root)
     for s, p, o in sorted(graph):
         print(f'{s} \n {p} \n {o}')
-    assert len(list(graph.objects(None, SDO.sameAs))) == 1
+    if config['ENRICH_TERMS']:
+        assert len(list(graph.objects(None, SDO.sameAs))) == 2
+    else:
+        assert len(list(graph.objects(None, SDO.sameAs))) == 1
     assert len(list(graph.objects(None, SDO.propertyID))) == 1
     assert len(list(graph.objects(None, SDO.associatedMedia))) == 1
 
