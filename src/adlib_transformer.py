@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import logging
 from typing import Optional, Any
 import xml.etree.ElementTree as ET
@@ -16,15 +16,19 @@ import adlibxml_to_schemaorg_mapping as mapping
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 ENCODING = os.getenv('ENCODING', 'utf-8')
 COLLECTION_ID = 'rce/' + os.getenv('COLLECTION_ID', 'kunstcollecties-harvest')
-MODIFIED_ON_OR_AFTER = datetime.datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970-01-01'), '%Y-%m-%d')
+MODIFIED_ON_OR_AFTER = datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970-01-01'), '%Y-%m-%d')
 
 config = yaml.safe_load(open(CONFIG_PATH, encoding=ENCODING))
 logger = logging.getLogger(__name__)
 
 def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
-    
+    """ This function takes a Graph and an XML tree and parses the tree into the graph """
+
+    # Adlib record priref unique identifier
     priref = get_text_from_tree(tree, xpath.PRIREF)
-    mod_dt = datetime.datetime.strptime(tree.attrib['modification'], '%Y-%m-%dT%H:%M:%S')
+    # Modification date of record
+    mod_dt = datetime.strptime(tree.attrib['modification'], '%Y-%m-%dT%H:%M:%S')
+    # Check record in scope
     if priref and mod_dt >= MODIFIED_ON_OR_AFTER:
         record_object_node = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, priref, SDO.CreativeWork)
         target_graph.add((record_object_node, SDO.sdDatePublished, Literal(mod_dt, datatype=XSD.dateTime)))
@@ -32,7 +36,10 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
         return target_graph
     
     # adding required field isPartOf dataset reference
-    target_graph.add((record_object_node, SDO.isPartOf, URIRef('https://linkeddata.cultureelerfgoed.nl/rce/datacatalog/Dataset/103')))
+    dataset_node = uritools.get_object_uri(config['BASE_URI'], 'rce/datacatalog', 'https://linkeddata.cultureelerfgoed.nl/rce/datacatalog/Dataset/103', SDO.Dataset)
+    target_graph.add((record_object_node, SDO.isPartOf, dataset_node))
+
+    # add record types from mapping
     for rtype in mapping.RECORD_OBJECT_TYPES:
         target_graph.add((record_object_node, RDF.type, rtype))
 
@@ -42,6 +49,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
         if item_text:
             target_graph.add((record_object_node, ref[0], ref[1](item_text, datatype=ref[2])))
 
+    # add property value attributes
     for key, ref in mapping.PROPERTY_VALUE_MAPPING.items():
         item_text = get_text_from_tree(tree, key)
         if item_text:
@@ -52,7 +60,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
             target_graph.add((property_node, SDO.description, Literal(ref[1], datatype=XSD.string)))
             target_graph.add((record_object_node, SDO.identifier, property_node))
 
-    # defined terms that might be enrichable via CHT
+    # add defined terms, if configured enrich via CHT
     for key, ref in mapping.CHT_TERM_FIELD_MAPPING.items():
         for item in tree.findall(key):
             if item.text != None and item.text.strip() != '':
@@ -77,9 +85,8 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
                 target_graph.add((loc_url, RDF.type, ref[1]))
                 target_graph.add((loc_url, ref[0], Literal(item.text, lang='nl')))
 
-    # Creator
+    # add creator, creators are always persons in version 0.1 of datamodel
     sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, priref, SDO.Person)
-    # creators are always persons in current datamodel
     target_graph.add((sdo_creator_node, RDF.type, SDO.Person))
     target_graph.add((record_object_node, SDO.creator, sdo_creator_node))
     for key, ref in mapping.CREATOR_MAPPING.items():
@@ -95,7 +102,8 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
 
     # Link to image of object at memorix based on reproduction reference
     for index, r_ref in enumerate(tree.findall(xpath.REPRODUCTION_REFERENCE)):
-        if r_ref.text:
+        # check presence of reproduction reference and that the assigned rights permit publication 
+        if r_ref.text and get_text_from_tree(tree, xpath.RIGHTS_ASSIGNED_VALUE) in config['RIGHTS_ASSIGNED_ALLOWLIST']:
             r_ref_node = uritools.get_object_uri(config['BASE_URI'], COLLECTION_ID, r_ref.text, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1])
             target_graph.add((r_ref_node, RDF.type, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1]))
             target_graph.add((record_object_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][0], r_ref_node))
@@ -155,7 +163,7 @@ def make_statistics(tree: Any, check_text=False) -> dict[str, int]:
     for elem in tree.iter():
         if check_text:
             text_present = (elem.text != None and elem.text.strip() != '')
-            has_children = len(list(elem)) 
+            has_children = len(list(elem))
             if not (text_present or has_children > 0): continue
         if elem.tag in stats:
             stats[elem.tag] = stats[elem.tag] + 1

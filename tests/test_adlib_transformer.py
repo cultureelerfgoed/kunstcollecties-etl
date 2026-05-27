@@ -21,7 +21,9 @@ def test_transform_valid():
         '</creator>' \
         '<rkdartists>https://rkd.nl/artists/337566</rkdartists>' \
         '</Production>' \
-        '<Rights><rights.holder>Gijzen, W.F.</rights.holder></Rights>' \
+        '<Rights><rights.assigned><value lang="neutral">PICTORIGHT</value><value lang="0">No, rights assigned to Pictoright</value>' \
+        '<value lang="1">Nee, maar toestemming voor gebruik Pictoright (afbeelding zichtbaar) </value></rights.assigned>' \
+        '<rights.holder>Gijzen, W.F.</rights.holder></Rights>' \
         '<Reproduction><reproduction.reference>37d77ebb-3c6c-d691-884e-75cdf50125f7</reproduction.reference></Reproduction>' \
         '</record>' 
     root = ET.fromstring(test_xml)
@@ -31,8 +33,9 @@ def test_transform_valid():
     graph = adlib_transformer.parse_tree_to_graph(graph, root)
     for s, p, o in sorted(graph):
         print(f'{s} \n {p} \n {o}')
-    assert len(list(graph.objects(None, SDO.sameAs))) == 2
+    assert len(list(graph.objects(None, SDO.sameAs))) == 1
     assert len(list(graph.objects(None, SDO.propertyID))) == 1
+    assert len(list(graph.objects(None, SDO.associatedMedia))) == 1
 
 
 def test_transform_invalid():
@@ -50,3 +53,26 @@ def test_transform_invalid():
     graph = Graph()
     adlib_transformer.parse_tree_to_graph(graph, root)
     assert len(list(graph.objects(None, SDO.sameAs))) == 0
+
+def test_rights_allowlist():
+    test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
+        '<priref>98500</priref>' \
+        '<object_number>aa111</object_number>' \
+        '<object_category>olieverf</object_category>' \
+        '<Production>' \
+        '<creator>' \
+        '<name>onbekend</name>' \
+        '</creator>' \
+        '<rkdartists>https://rkd.nl/artists/337566</rkdartists>' \
+        '</Production>' \
+        '<Rights><rights.assigned><value lang="neutral">NOPZB</value><value lang="0">No, publish without image</value>' \
+        '<value lang="1">Nee, geen toestemming publiceren zonder beeld (afbeelding niet zichtbaar)</value>' \
+        '<value lang="2">Non, publier sans image</value><value lang="3">Nein, publizieren ohne bild</value></rights.assigned>' \
+        '<rights.holder>Gijzen, W.F.</rights.holder></Rights>' \
+        '<Reproduction><reproduction.reference>37d77ebb-3c6c-d691-884e-75cdf50125f7</reproduction.reference></Reproduction>' \
+        '</record>' 
+    root = ET.fromstring(test_xml)
+    # get detailed information with priref 
+    graph = Graph()
+    adlib_transformer.parse_tree_to_graph(graph, root)
+    assert len(list(graph.objects(None, SDO.associatedMedia))) == 0
