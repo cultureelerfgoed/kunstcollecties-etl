@@ -1,16 +1,21 @@
-# Linked Data 
+### Linked Data ### 
+# base uri voor linked data, nodes worden op basis van deze uri opgebouwd 
 BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
-ENRICH_TERMS: False
+# als deze waarde op 'True' staat, wordt er een poging gedaan om DefinedTerms te verrijken via de CHT Rest API 
+ENRICH_TERMS: True
 
-# Adlib API 
+### Adlib API ###
+# API endpoint
 SRC_URI: 'https://rcerijswijk.adlibhosting.com/api.wo2/wwwopac.ashx'
+# naam van database in Adlib
 SRC_DB: 'ruben'
+# records per pagina, 100 is het meest consistent
 SRC_API_LIMIT: 100
 
-# Image rights
+### Toegestane waardes om link naar memorix te tonen ###
 RIGHTS_ASSIGNED_ALLOWLIST: ['NOPMB', 'PICTORIGHT', 'YES']
 
-# Organisatie
+### Organisatie ###
 ORG_URI: 'https://www.cultureelerfgoed.nl/'
 ORG_NAME: 'Rijksdienst voor het Cultureel Erfgoed'
 ORG_SAME_AS: 'https://standaarden.overheid.nl/owms/terms/Rijksdienst_voor_het_Cultureel_Erfgoed'
