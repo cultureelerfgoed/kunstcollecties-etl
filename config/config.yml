@@ -7,6 +7,9 @@ SRC_URI: 'https://rcerijswijk.adlibhosting.com/api.wo2/wwwopac.ashx'
 SRC_DB: 'ruben'
 SRC_API_LIMIT: 100
 
+# Image rights
+RIGHTS_ASSIGNED_ALLOWLIST: ['NOPMB', 'PICTORIGHT', 'YES']
+
 # Organisatie
 ORG_URI: 'https://www.cultureelerfgoed.nl/'
 ORG_NAME: 'Rijksdienst voor het Cultureel Erfgoed'

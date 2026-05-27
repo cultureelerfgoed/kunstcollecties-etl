@@ -1,4 +1,4 @@
-name: 'RCE Kunscollecties ETL: harvest & push' 
+name: 'RCE Kunscollecties ETL: stateful harvest' 
 
 env:
   BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
