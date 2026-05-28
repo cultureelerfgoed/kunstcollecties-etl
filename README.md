@@ -1,4 +1,21 @@
-# kunstcollecties-etl
+# Kunstcollecties ETL
+
+```mermaid
+flowchart LR;
+    Adlib(Adlib API) --> ETL(Github Action) --> LDV(Linked Data Voorziening)
+```
+
+## Inhoud van deze repository
+Deze ETL bestaat uit de volgende onderdelen:
+- de workflows in ``` .github/workflows/ ```
+- tests in ``` tests/ ```
+- configuratie in ``` config/ ```
+- code in ``` src/ ``` die bestaat uit:
+    - een mapping in ``` src/adlibxml_to_schemaorg_mapping.py ```
+    - een lijst van AdlibXML xpaths in ``` src/adlib_xpaths_py ```
+    - een lijst AdlibXML elementen in ``` src/adlib_tags.py ```
+    - transformatie logica in ``` src/adlib_transformer.py ```
+    - harvestering logica in ``` src/harvest_service.py ``` en ``` src/adlib_harvester.py ```
 
 ## Running tests
 ``` python -m pytest -s tests/test_adlib_transformer.py ```
