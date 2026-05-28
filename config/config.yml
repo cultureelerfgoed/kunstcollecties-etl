@@ -2,7 +2,7 @@
 # base uri voor linked data, nodes worden op basis van deze uri opgebouwd 
 BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
 # als deze waarde op 'True' staat, wordt er een poging gedaan om DefinedTerms te verrijken via de CHT Rest API 
-ENRICH_TERMS: True
+ENRICH_TERMS: False
 
 ### Adlib API ###
 # API endpoint
