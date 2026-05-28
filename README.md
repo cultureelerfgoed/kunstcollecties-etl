@@ -17,5 +17,11 @@ Deze ETL bestaat uit de volgende onderdelen:
     - transformatie logica in ``` src/adlib_transformer.py ```
     - harvestering logica in ``` src/harvest_service.py ``` en ``` src/adlib_harvester.py ```
 
+## Context
+- Dataset op de Linked Data Voorziening
+- Mapping op basis van CN model, wat een minder stricte versie van het NDE schema.org applicatieprofiel is.  
+- Rechten voor afbeeldingen op Memorix basis van AdlibXML
+- Limieten Github Actions en Triply API.
+
 ## Running tests
 ``` python -m pytest -s tests/test_adlib_transformer.py ```
