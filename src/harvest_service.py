@@ -36,6 +36,7 @@ def main():
         CHUNK_SIZE = args.chunks
     
     logger.info('Starting harvest of \n endpoint: %s \n enriching terms: %s \n pushing to: %s', config['SRC_URI'], config['ENRICH_TERMS'], config['BASE_URI']+config['COLLECTION_ID'])
+    total = 0
     for index in range(0, int(MAX_RECORDS/CHUNK_SIZE)):
         records = 0
         rgraph = uritools.get_organization(config['ORG_URI'], 
@@ -55,15 +56,16 @@ def main():
                                     end_at=(index+1)*CHUNK_SIZE, 
                                     apilimit=config['SRC_API_LIMIT'])
             records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
-        except AssertionError as e:
+        except Exception as e:
             logger.error('Harvesting failed: %s', str(traceback.format_exception(e)))
         
         if records == 0:
-            logger.info('Reached end of records from source API, exiting..')
+            logger.info('Reached end of records from source API, total retrieved records: %i, exiting..', total)
             break
         else:
             b = datetime.datetime.now().replace(microsecond=0)
             dt = b-a
+            total = total + records
             dt_avg = (dt/records) / datetime.timedelta(milliseconds=1)
             logger.info('Finished after %s, average time spent per record %s ms.', str(dt), str(dt_avg))
             path = f'kc-pt-{index}.jsonld'
