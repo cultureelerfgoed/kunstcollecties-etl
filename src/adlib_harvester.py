@@ -4,6 +4,7 @@ import logging
 import traceback
 import xml.etree.ElementTree as ET
 from rdflib import Graph
+from requests import HTTPError
 import adlib_transformer
 
 logger = logging.getLogger(__name__)
@@ -30,13 +31,16 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
                         "&startfrom=" + str(startfrom)
         
         try:
-            result = urllib.request.urlopen(requestUrl, timeout=180)
-            adlibXML = result.read()
-            root = ET.fromstring(adlibXML)
-            # get detailed information with priref
-            r_list = root.findall('.//record')
-        except (TimeoutError, OSError) as re:
+            result = urllib.request.urlopen(requestUrl, timeout=180)    
+        except (TimeoutError, OSError, HTTPError) as re:
             logger.warning('Error while getting the page: %s', str(traceback.format_exception(re)))
+            logger.warning('Retrying the page..')
+            result = urllib.request.urlopen(requestUrl, timeout=240)
+
+        adlibXML = result.read()
+        root = ET.fromstring(adlibXML)
+        # get detailed information with priref
+        r_list = root.findall('.//record')
 
         if len(r_list) > 0:
             hits = root.find('.//hits')

@@ -1,6 +1,9 @@
 ### Linked Data ### 
 # base uri voor linked data, nodes worden op basis van deze uri opgebouwd 
 BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
+# COLLECTION_ID is de gebruikte suffix voor de URIs
+COLLECTION_ID: 'rce/rijkscollectie-rce'
+
 # als deze waarde op 'True' staat, wordt er een poging gedaan om DefinedTerms te verrijken via de CHT Rest API 
 ENRICH_TERMS: False
 
