@@ -18,7 +18,7 @@ Deze ETL bestaat uit de volgende onderdelen:
     - harvestering logica in ``` src/harvest_service.py ``` en ``` src/adlib_harvester.py ```
 
 ## Context
-- Dataset op de Linked Data Voorziening [kunstcollecties-harvest](https://linkeddata.cultureelerfgoed.nl/rce/kunstcollecties-harvest)
+- Dataset op de Linked Data Voorziening [rijkscollectie-rce](https://linkeddata.cultureelerfgoed.nl/rce/rijkscollectie-rce)
 - Mapping op basis van CN model, wat een minder stricte versie van het NDE schema.org applicatieprofiel is.  
 - Rechten voor afbeeldingen op Memorix basis van AdlibXML
 - Limieten Github Actions en Triply API.

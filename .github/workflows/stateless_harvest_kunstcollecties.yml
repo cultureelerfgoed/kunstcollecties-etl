@@ -3,8 +3,8 @@ name: 'RCE Kunstcollecties ETL: stateless harvest'
 env:
   BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
   ARTIFACT_PATH: 'artifact.tar.gz'
-  GRAPH_ID: 'kunstcollecties-latest-graph'
-  DATASET_NAME: 'kunstcollecties-harvest'
+  GRAPH_ID: 'rijkscollectie-latest-graph'
+  DATASET_NAME: 'rijkscollectie-rce'
 
 on:
   workflow_dispatch:
