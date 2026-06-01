@@ -77,4 +77,4 @@ jobs:
     steps:
     - name: Sync changes to TriplyDB API via cURL
       run:  |
-        curl -H 'Authorization: Bearer ${{ secrets.LDV_API_TOKEN }}' -H 'Content-Type: application/json' -X POST https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/${{ env.DATASET_NAME }}/services/kunstcollecties-harvest -d '{"sync": "true"}'
+        curl -H 'Authorization: Bearer ${{ secrets.LDV_API_TOKEN }}' -H 'Content-Type: application/json' -X POST 'https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/${{ env.DATASET_NAME }}/services/${{ env.DATASET_NAME }}' -d '{"sync": "true"}'

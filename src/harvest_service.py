@@ -28,13 +28,14 @@ def main():
         level=logging.INFO,
         datefmt='%Y-%m-%d %H:%M:%S')
     
-    parser = argparse.ArgumentParser("Kunstcollecties ETL")
+    parser = argparse.ArgumentParser("Rijkscollectie-RCE ETL")
     parser.add_argument("--chunks", help="Number of records per json-ld file.", type=int)
 
     args = parser.parse_args()
     if args.chunks:
         CHUNK_SIZE = args.chunks
     
+    logger.info('Starting harvest of \n endpoint: %s \n enriching terms: %s \n pushing to: %s', config['SRC_URI'], config['ENRICH_TERMS'], config['BASE_URI']+config['COLLECTION_ID'])
     for index in range(0, int(MAX_RECORDS/CHUNK_SIZE)):
         records = 0
         rgraph = uritools.get_organization(config['ORG_URI'], 
