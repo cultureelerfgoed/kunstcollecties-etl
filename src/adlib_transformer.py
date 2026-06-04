@@ -1,6 +1,5 @@
 from datetime import datetime
 import logging
-import traceback
 from typing import Optional, Any
 import xml.etree.ElementTree as ET
 import uuid
@@ -98,9 +97,6 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
             target_graph.add((record_object_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][0], r_ref_node))
             target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][3], record_object_node))
             target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][2], uritools.get_memorix_uri_from_reference(r_ref.text)))
-
-    # Organization 
-    target_graph.add((record_object_node, SDO.provider, Literal(config['ORG_URI'], datatype=XSD.anyURI)))
 
     # Dimensions
     for index, dimension in enumerate(tree.findall(xpath.DIMENSION)):
