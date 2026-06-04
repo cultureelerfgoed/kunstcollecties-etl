@@ -6,6 +6,7 @@ ASSOCIATED_SUBJECT = './/Associated_subject'
 ASSOCIATION_SUBJECT = './/association.subject'
 ASSOCIATION_SUBJECT_TYPE = './/association.subject.type'
 ASSOCIATION_SUBJECT_TYPE_VALUE = './/association.subject.type/value'
+ASSOCIATION_SUBJECT_SRC_URI = './/association.subject.type/Source/source.number'
 
 DIMENSION = './/Dimension'
 DIMENSION_FREE = './/dimension.free'
@@ -31,20 +32,24 @@ INSCRIPTION_DESCRIPTION = './/Inscription/inscription.description'
 MATERIAL = './/Material'
 MATERIAL_ITEM = './/Material/material'
 MATERIAL_PART = './/Material/material.part'
+MATERIAL_SRC_URI = './/Material/material/Source/source.number'
 
 OBJECT_NAME = './/Object_name'
 OBJECT_NAME_ITEM = './/Object_name/object_name'
 
-PRODUCTION = './/Production'
 CREATOR = './/Production/creator'
 CREATOR_NAME = './/Production/creator/name'
 CREATOR_DATE_OF_BIRTH = './/creator.date_of_birth'
 CREATOR_DATE_OF_DEATH = './/creator.date_of_death'
 CREATOR_ROLE = './/creator.role'
-PRODUCTION_NOTES = './/production.notes'
-PRODUCTION_PLACE = './/production.place'
 RKDARTISTS = './/rkdartists'
 
+
+PRODUCTION = './/Production'
+PRODUCTION_NOTES = './/production.notes'
+PRODUCTION_PLACE = './/production.place'
+PRODUCTION_PLACE_SRC_TERM = './/production.place/term'
+PRODUCTION_PLACE_SRC_URI = './/production.place/Source/source.number'
 PRODUCTION_DATE = './/Production_date'
 PRODUCTION_DATE_END = './/production.date.end'
 PRODUCTION_DATE_START = './/production.date.start'
@@ -64,8 +69,12 @@ TITLE_TEXT = './/Title/title'
 
 INSTITUTION_NAME = './/institution.name'
 NUMBER_OF_PARTS = './/number_of_parts'
+
 OBJECT_CATEGORY = './/object_category'
+OBJECT_CATEGORY_SRC_URI = './/object_category/Source/source.number'
+
 OBJECT_NUMBER = './/object_number'
+
 PART = './/part'
 PRIREF = './/priref'
 MODIFICATION = './/modification'

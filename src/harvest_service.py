@@ -56,7 +56,7 @@ def main():
                                     end_at=(index+1)*CHUNK_SIZE, 
                                     apilimit=config['SRC_API_LIMIT'])
             records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
-        except Exception as e:
+        except TypeError as e: # Exception as e:
             logger.error('Harvesting failed: %s', str(traceback.format_exception(e)))
         
         if records == 0:

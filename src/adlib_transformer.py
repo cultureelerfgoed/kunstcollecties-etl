@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import traceback
 from typing import Optional, Any
 import xml.etree.ElementTree as ET
 import uuid
@@ -58,30 +59,20 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
             target_graph.add((property_node, SDO.description, Literal(ref[1], datatype=XSD.string)))
             target_graph.add((record_object_node, SDO.identifier, property_node))
 
-    # add defined terms, if configured enrich via CHT
+    # add defined terms
     for key, ref in mapping.DEFINED_TERM_FIELD_MAPPING.items():
         for item in tree.findall(key):
             if item.text != None and item.text.strip() != '':
                 dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], item.text,  mapping.DEFINED_TERM_TYPES[key][0]))
-                target_graph.add((record_object_node, ref, dt_url))
+                target_graph.add((record_object_node, ref[0], dt_url))
                 for item_type in mapping.DEFINED_TERM_TYPES[key]:
                     target_graph.add((dt_url, RDF.type, item_type))
                 target_graph.add((dt_url, SDO.name, Literal(item.text, datatype=XSD.string)))
-                if config['ENRICH_TERMS']:
-                    term_uri = uritools.get_term_uri_from_cht(item.text)
-                    if term_uri:
-                        target_graph.add((dt_url, SDO.sameAs, Literal(term_uri, datatype=XSD.anyURI)))
-                        logger.debug('Term URI found for %s, %s', item.text, term_uri)
-                    else:
-                        logger.debug('No term URI found for %s', item.text)
 
-    # location created
-    for key, ref in mapping.LOCATION_FIELDS.items():
-        for item in tree.findall(key):
-            if item.text != None and item.text.strip() != '':
-                loc_url = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], item.text, ref[1])
-                target_graph.add((loc_url, RDF.type, ref[1]))
-                target_graph.add((loc_url, ref[0], Literal(item.text, lang='nl')))
+                # check for enrichment
+                term_uri = get_text_from_tree(tree, ref[2])
+                if term_uri:
+                    target_graph.add((dt_url, SDO.sameAs, URIRef(term_uri)))
 
     # add creator, creators are always persons in version 0.1 of datamodel
     sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], priref, SDO.Person)
@@ -114,26 +105,33 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     # Dimensions
     for index, dimension in enumerate(tree.findall(xpath.DIMENSION)):
         qv_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], str(uuid.uuid4()), SDO.QuantitativeValue)
-        target_graph.add((qv_node, RDF.type, SDO.QuantitativeValue))
+        
+        try:
+            d_unit = next(dimension.iterfind(tags.DIMENSION_UNIT))
+            target_graph.add((qv_node, RDF.type, SDO.QuantitativeValue))
+            if d_unit.text:
+                target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_UNIT], Literal(d_unit.text, datatype=XSD.string)))
+            
+            d_val = next(dimension.iterfind(tags.DIMENSION_VALUE))
+            if d_val.text:
+                target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_VALUE], Literal(d_val.text, datatype=XSD.string)))
+            
+            d_type = next(dimension.iterfind(tags.DIMENSION_TYPE))
+            if d_type.text == 'hoogte':
+                target_graph.add((qv_node, SDO.valueReference, Literal('hoogte', lang='nl')))
+                target_graph.add((record_object_node, SDO.height, qv_node))
+            elif d_type.text == 'breedte':
+                target_graph.add((qv_node, SDO.valueReference, Literal('breedte', lang='nl')))
+                target_graph.add((record_object_node, SDO.width, qv_node))
+            elif d_type.text == 'diepte':
+                target_graph.add((qv_node, SDO.valueReference, Literal('diepte', lang='nl')))
+                target_graph.add((record_object_node, SDO.depth, qv_node))
 
-        d_unit = next(dimension.iterfind(tags.DIMENSION_UNIT))
-        if d_unit.text:
-            target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_UNIT], Literal(d_unit.text, datatype=XSD.string)))
-        
-        d_val = next(dimension.iterfind(tags.DIMENSION_VALUE))
-        if d_val.text:
-            target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_VALUE], Literal(d_val.text, datatype=XSD.string)))
-        
-        d_type = next(dimension.iterfind(tags.DIMENSION_TYPE))
-        if d_type.text == 'hoogte':
-            target_graph.add((qv_node, SDO.valueReference, Literal('hoogte', lang='nl')))
-            target_graph.add((record_object_node, SDO.height, qv_node))
-        elif d_type.text == 'breedte':
-            target_graph.add((qv_node, SDO.valueReference, Literal('breedte', lang='nl')))
-            target_graph.add((record_object_node, SDO.width, qv_node))
-        elif d_type.text == 'diepte':
-            target_graph.add((qv_node, SDO.valueReference, Literal('diepte', lang='nl')))
-            target_graph.add((record_object_node, SDO.depth, qv_node))
+        except StopIteration:
+            logger.error('Invalid Dimension: %s', ET.tostring(dimension))
+            target_graph.remove((qv_node, None, None))
+            target_graph.remove((None, None, qv_node))
+            
 
     # rightsholder
     rholder_text = get_text_from_tree(tree, xpath.RIGHTS_HOLDER)
