@@ -122,6 +122,9 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
             elif d_type.text == 'diepte':
                 target_graph.add((qv_node, SDO.valueReference, Literal('diepte', lang='nl')))
                 target_graph.add((record_object_node, SDO.depth, qv_node))
+            elif d_type.text == 'gewicht':
+                target_graph.add((qv_node, SDO.valueReference, Literal('gewicht', lang='nl')))
+                target_graph.add((record_object_node, SDO.weight, qv_node))
 
         except StopIteration:
             logger.error('Invalid Dimension: %s', ET.tostring(dimension))

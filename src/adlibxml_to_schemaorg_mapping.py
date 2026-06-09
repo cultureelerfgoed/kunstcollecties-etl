@@ -35,8 +35,8 @@ PROPERTY_VALUE_MAPPING = {
 # directe attributen van het CreativeWork
 BASIC_MAPPING = {
     adlib_xpaths.DESCRIPTION_TEXT: [SDO.description, Literal, XSD.string],
-    adlib_xpaths.OBJECT_NAME_ITEM: [SDO.description, Literal, XSD.string],
-    adlib_xpaths.DIMENSION_FREE: [SDO.description, Literal, XSD.string],
+    adlib_xpaths.OBJECT_NAME_ITEM: [SDO.name, Literal, XSD.string],
+    adlib_xpaths.DIMENSION_FREE: [SDO.size, Literal, XSD.string],
     adlib_xpaths.PRODUCTION_DATE_END: [SDO.dateCreated, Literal, XSD.string],
     adlib_xpaths.TITLE_TEXT: [SDO.name, Literal, XSD.string],
 }
