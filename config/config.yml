@@ -9,9 +9,9 @@ ENRICH_TERMS: False
 
 ### Adlib API ###
 # API endpoint
-SRC_URI: 'https://rcerijswijk.adlibhosting.com/api.wo2/wwwopac.ashx'
+SRC_URI: 'https://rcerijswijk.adlibhosting.com/api.wo2/oai.ashx'
 # naam van database in Adlib
-SRC_DB: 'ruben'
+SRC_DB: 'ruben_s'
 # records per pagina, 100 is het meest consistent
 SRC_API_LIMIT: 100
 
