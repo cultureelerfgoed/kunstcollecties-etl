@@ -9,7 +9,7 @@ import adlib_transformer
 
 logger = logging.getLogger(__name__)
 
-def harvest(target_graph: Graph, endpoint: str, database='collect', search='all', xmltype='grouped', make_stats=False, start_from=0, end_at=200000, apilimit = 500) -> Graph:
+def harvest(target_graph: Graph, endpoint: str, database='collect', search='all', xmltype='grouped', make_stats=True, start_from=0, end_at=200000, apilimit = 500) -> Graph:
     ## initialize variables for loop
     stats = {}
     if start_from:

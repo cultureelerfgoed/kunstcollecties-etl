@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import re
 from typing import Optional, Any
 import xml.etree.ElementTree as ET
 import uuid
@@ -19,18 +20,19 @@ MODIFIED_ON_OR_AFTER = datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970
 config = yaml.safe_load(open(CONFIG_PATH))
 logger = logging.getLogger(__name__)
 
-def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
+def parse_tree_to_graph(target_graph: Graph, tree: Any, ns_pfx=None, ns=None) -> Graph:
     """ This function takes a Graph and an XML tree and parses the tree into the graph """
 
     # Adlib record priref unique identifier
-    priref = get_text_from_tree(tree, xpath.PRIREF)
+    priref = get_text_from_tree(tree, xpath.PRIREF, ns_pfx, ns)
     # Modification date of record
-    mod_dt = datetime.strptime(tree.attrib['modification'], '%Y-%m-%dT%H:%M:%S')
+    #mod_dt = datetime.strptime(tree.attrib['modification'], '%Y-%m-%dT%H:%M:%S')
     # Check record in scope
-    if priref and mod_dt >= MODIFIED_ON_OR_AFTER:
+    if priref:
         record_object_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], priref, SDO.CreativeWork)
-        target_graph.add((record_object_node, SDO.sdDatePublished, Literal(mod_dt, datatype=XSD.dateTime)))
+        #target_graph.add((record_object_node, SDO.sdDatePublished, Literal(mod_dt, datatype=XSD.dateTime)))
     else:
+        logger.warning('no priref found skipping record')
         return target_graph
     
     # adding required field isPartOf dataset reference
@@ -43,13 +45,13 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
 
     # first degree attributes
     for key, ref in mapping.BASIC_MAPPING.items():
-        item_text = get_text_from_tree(tree, key)
+        item_text = get_text_from_tree(tree, key, ns_pfx, ns)
         if item_text:
             target_graph.add((record_object_node, ref[0], ref[1](item_text, datatype=ref[2])))
 
     # add property value attributes
     for key, ref in mapping.PROPERTY_VALUE_MAPPING.items():
-        item_text = get_text_from_tree(tree, key)
+        item_text = get_text_from_tree(tree, key, ns_pfx, ns)
         if item_text:
             property_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], priref, SDO.PropertyValue)
             target_graph.add((property_node, RDF.type, SDO.PropertyValue))
@@ -69,7 +71,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
                 target_graph.add((dt_url, SDO.name, Literal(item.text, datatype=XSD.string)))
 
                 # check for enrichment
-                term_uri = get_text_from_tree(tree, ref[2])
+                term_uri = get_text_from_tree(tree, ref[2], ns_pfx, ns)
                 if term_uri:
                     target_graph.add((dt_url, SDO.sameAs, URIRef(term_uri)))
 
@@ -78,7 +80,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     target_graph.add((sdo_creator_node, RDF.type, SDO.Person))
     target_graph.add((record_object_node, SDO.creator, sdo_creator_node))
     for key, ref in mapping.CREATOR_MAPPING.items():
-        item_text = get_text_from_tree(tree, key)
+        item_text = get_text_from_tree(tree, key, ns_pfx, ns)
         if item_text:
             if ref[2] == XSD.anyURI:
                 # validate uri
@@ -91,7 +93,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
     # Link to image of object at memorix based on reproduction reference
     for index, r_ref in enumerate(tree.findall(xpath.REPRODUCTION_REFERENCE)):
         # check presence of reproduction reference and that the assigned rights permit publication 
-        if r_ref.text and get_text_from_tree(tree, xpath.RIGHTS_ASSIGNED_VALUE) in config['RIGHTS_ASSIGNED_ALLOWLIST']:
+        if r_ref.text and get_text_from_tree(tree, xpath.RIGHTS_ASSIGNED_VALUE, ns_pfx, ns) in config['RIGHTS_ASSIGNED_ALLOWLIST']:
             r_ref_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], r_ref.text, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1])
             target_graph.add((r_ref_node, RDF.type, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1]))
             target_graph.add((record_object_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][0], r_ref_node))
@@ -133,7 +135,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
             
 
     # rightsholder
-    rholder_text = get_text_from_tree(tree, xpath.RIGHTS_HOLDER)
+    rholder_text = get_text_from_tree(tree, xpath.RIGHTS_HOLDER, ns_pfx, ns)
     if rholder_text:
         sdo_rholder_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], str(uuid.uuid4()), SDO.Person)
         target_graph.add((sdo_rholder_node, RDF.type, SDO.Person))
@@ -142,8 +144,14 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any) -> Graph:
 
     return target_graph
 
-def get_text_from_tree(tree: (ET.ElementTree | ET.Element), target_xpath: str) -> Optional[str]:
-    t_elem = tree.find(target_xpath)
+def get_text_from_tree(tree: (ET.ElementTree | ET.Element), target_xpath: str, ns_pfx: Optional[str], ns: Optional[str]) -> Optional[str]:
+    if ns_pfx and ns:
+        xp_segms = re.split(r'\.//|\./|/', target_xpath)[1:]
+        for segment in xp_segms:
+            target_xpath = target_xpath.replace(segment, f'{ns_pfx}:{segment}')
+        t_elem = tree.find(target_xpath, namespaces={ns_pfx:ns})
+    else:
+        t_elem = tree.find(target_xpath)
     if t_elem is not None and t_elem.text:
         return t_elem.text
 

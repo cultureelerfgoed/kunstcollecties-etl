@@ -6,7 +6,7 @@ import argparse
 import yaml
 import uritools
 from rdflib.namespace import SDO, RDF
-import adlib_harvester
+import adlib_harvester as harvester
 
 def main():
     """ main runner for workflow """
@@ -48,7 +48,7 @@ def main():
                                             config['ORG_ALTNAME'])
         a = datetime.datetime.now().replace(microsecond=0)
         try:
-            adlib_harvester.harvest(rgraph, 
+            harvester.harvest(rgraph, 
                                     endpoint=config['SRC_URI'], 
                                     database=config['SRC_DB'], 
                                     make_stats=False,
