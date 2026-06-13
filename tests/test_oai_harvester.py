@@ -33,8 +33,8 @@ def test_harvest():
                         verb='ListRecords', 
                         metadata_prefix='rs', 
                         set_spec=config['SRC_DB'],
-                        out_path='out/harvest.json-ld',
-                        max_items=100)
+                        max_items=100,
+                        start_from=3000)
     records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
     assert records == 100
     

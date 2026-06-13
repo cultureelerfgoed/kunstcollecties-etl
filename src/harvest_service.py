@@ -6,7 +6,7 @@ import argparse
 import yaml
 import uritools
 from rdflib.namespace import SDO, RDF
-import adlib_harvester as harvester
+import oai_harvester as harvester
 
 def main():
     """ main runner for workflow """
@@ -48,13 +48,13 @@ def main():
                                             config['ORG_ALTNAME'])
         a = datetime.datetime.now().replace(microsecond=0)
         try:
-            harvester.harvest(rgraph, 
-                                    endpoint=config['SRC_URI'], 
-                                    database=config['SRC_DB'], 
-                                    make_stats=False,
-                                    start_from=index*CHUNK_SIZE,
-                                    end_at=(index+1)*CHUNK_SIZE, 
-                                    apilimit=config['SRC_API_LIMIT'])
+            rgraph = harvester.harvest(rgraph, 
+                        base_url=config['SRC_URI'], 
+                        verb='ListRecords', 
+                        metadata_prefix='rs', 
+                        set_spec=config['SRC_DB'],
+                        max_items=CHUNK_SIZE,
+                        start_from=index*CHUNK_SIZE)
             records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
         except TypeError as e: # Exception as e:
             logger.error('Harvesting failed: %s', str(traceback.format_exception(e)))

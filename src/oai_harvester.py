@@ -80,7 +80,7 @@ def safe_open_url(req: urllib.request.Request, retries: int = 3, backoff: float 
                     except zlib.error:
                         raw = zlib.decompress(raw, -zlib.MAX_WBITS)
 
-                logger.info(f"HTTP {status} | Content-Type: {ct} | Content-Encoding: {ce or 'none'}")
+                logger.debug(f"HTTP {status} | Content-Type: {ct} | Content-Encoding: {ce or 'none'}")
                 return status, ct, raw, headers
 
         except urllib.error.HTTPError as e:
@@ -105,7 +105,7 @@ def safe_open_url(req: urllib.request.Request, retries: int = 3, backoff: float 
             if attempt == retries - 1:
                 raise
             wait = backoff * (attempt + 1)
-            logger.info(f"Netwerkfout: {e}. Wachten {wait:.1f}s en opnieuw proberen...")
+            logger.warning(f"Netwerkfout: {e}. Wachten {wait:.1f}s en opnieuw proberen...")
             time.sleep(wait)
 
     if last_err:
@@ -136,7 +136,7 @@ def fetch_and_parse(url: str, headers: dict,
     repaired = AMP_FIX.sub("&amp;", text)
     try:
         root = ET.fromstring(repaired)
-        logger.info("Waarschuwing: XML gerepareerd (losse & geëscapet).")
+        logger.debug("Waarschuwing: XML gerepareerd (losse & geëscapet).")
         return root, repaired
     except ET.ParseError as e2:
         # Dump voor diagnose
@@ -252,22 +252,11 @@ def preflight_check_metadata_prefix(base_url: str, headers: dict,
         raise SystemExit(f"metadataPrefix '{desired_prefix}' niet beschikbaar. Kies een van: {', '.join(prefixes)}")
 
 # -----------------------------
-# EDM-veld extractie
-# -----------------------------
-def resolve_qname(qname: str) -> Tuple[str, dict]:
-    if ":" not in qname:
-        return qname, NS
-    prefix, local = qname.split(":", 1)
-    if prefix not in NS:
-        return qname, NS
-    return f".//{prefix}:{local}", NS
-
-# -----------------------------
 # Harvest met rotatie, limiet, CSV/JSONL
 # -----------------------------
 def harvest(target_graph: Graph, base_url: str, verb: str, metadata_prefix: Optional[str], set_spec: Optional[str],
-            out_path: str, sleep_between: float = 0.3, retries: int = 3, backoff: float = 1.5,
-            max_items: Optional[int] = None, rotate_every: Optional[int] = None) -> Graph:
+            sleep_between: float = 0.3, retries: int = 3, backoff: float = 1.5,
+            max_items: Optional[int] = None, start_from: Optional[int] = 0) -> Graph:
 
     headers = {
         "User-Agent": "OAI-PMH harvester (Python stdlib)",
@@ -279,42 +268,26 @@ def harvest(target_graph: Graph, base_url: str, verb: str, metadata_prefix: Opti
     try:
         preflight_identify(base_url, headers, retries, backoff)
     except Exception as e:
-        logger.info(f"Waarschuwing: Identify mislukte: {e}")
+        logger.warning(f"Failed to identify endpoint: {e}")
 
     if verb in ("ListRecords", "ListIdentifiers") and metadata_prefix:
         preflight_check_metadata_prefix(base_url, headers, metadata_prefix, retries, backoff)
 
-    st_path = state_path_for(out_path)
-    state = load_state(st_path)
-
-    # Paginerende verbs
-    base_name = os.path.splitext(out_path)[0]
-    ext = os.path.splitext(out_path)[1] or ".xml"
-
-    def out_path_for_index(idx: int) -> str:
-        return f"{base_name}_part{idx}{ext}" if idx > 1 else out_path
-
     # State init
     num_items = 0
     file_index = 1
-    current_out = out_path_for_index(file_index)
     params = oai_params_first_call(verb, metadata_prefix, set_spec)
     state = {
         "base_url": base_url,
         "verb": verb,
         "metadataPrefix": metadata_prefix,
         "set": set_spec,
-        "out_base": base_name,
         "file_index": file_index,
         "num_items": 0,
         "resumptionToken": "",
     }
 
-    # Open wrapper en dumpers
-    current_out = out_path_for_index(0)
-    ensure_open_wrapper(current_out, verb)
-
-    page = 0
+    page = int(start_from / 10)
     try:
         while True:
             if max_items is not None and num_items >= max_items:
@@ -323,7 +296,6 @@ def harvest(target_graph: Graph, base_url: str, verb: str, metadata_prefix: Opti
 
             page += 1
             url = build_url(base_url, params)
-            logger.info(f"Ophalen: {url}")
 
             root, text = fetch_and_parse(url, headers, retries, backoff)
             text = clean_xml(text)
@@ -343,28 +315,17 @@ def harvest(target_graph: Graph, base_url: str, verb: str, metadata_prefix: Opti
                     logger.warning('Error during transformation: %s', str(traceback.format_exception(te)))
 
                 num_items += 1
-                if num_items % 1000 == 0:
-                    logger.info(f"{num_items} items verwerkt...")
-
-            # Rotatie?
-            if rotate_every and num_items > 0 and (num_items % rotate_every == 0):
-                write_close_wrapper(current_out, verb)
-                file_index += 1
-                current_out = out_path_for_index(file_index)
-                ensure_open_wrapper(current_out, verb)
-                logger.info(f"Bestandsrotatie: gestart met {current_out}")
 
             # Volgende pagina
             rt_el = root.find(".//oai:resumptionToken", NS)
             rt = rt_el.text.strip() if rt_el is not None and rt_el.text else ""
-            logger.info(f"Pagina {page}: {len(elements)} items. ResumptionToken {'aanwezig' if rt else 'ontbreekt'}.")
+            logger.info(f"Pagina {page}, {num_items} items total. ResumptionToken {'aanwezig' if rt else 'ontbreekt'}.")
 
             state.update({
                 "file_index": file_index,
                 "num_items": num_items,
                 "resumptionToken": rt,
             })
-            save_state(st_path, state)
 
             if not rt:
                 break
@@ -372,10 +333,9 @@ def harvest(target_graph: Graph, base_url: str, verb: str, metadata_prefix: Opti
             params = {"verb": verb, "resumptionToken": rt}
             time.sleep(sleep_between)
 
-        write_close_wrapper(current_out, verb)
-        target_graph.serialize(format='json-ld', 
-                            destination='oai-kc.json-ld',  
-                            auto_compact=True)
+        #target_graph.serialize(format='json-ld', 
+        #                    destination='oai-kc.json-ld',  
+        #                    auto_compact=True)
         return target_graph
     except Exception as e:
         raise e
@@ -393,10 +353,10 @@ def main():
                         verb='ListRecords', 
                         metadata_prefix='rs', 
                         set_spec=config['SRC_DB'],
-                        out_path='out/harvest.xml',
+                        start_from=200,
                         max_items=100)
     records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
-    logger.info(f'got {records} records works')
+    logger.info(f'got {records} records ')
     assert records == 100
 
 if __name__ == "__main__":
