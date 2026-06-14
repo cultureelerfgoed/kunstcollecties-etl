@@ -333,9 +333,7 @@ def harvest(target_graph: Graph, base_url: str, verb: str, metadata_prefix: Opti
             params = {"verb": verb, "resumptionToken": rt}
             time.sleep(sleep_between)
 
-        #target_graph.serialize(format='json-ld', 
-        #                    destination='oai-kc.json-ld',  
-        #                    auto_compact=True)
+        
         return target_graph
     except Exception as e:
         raise e
@@ -356,6 +354,9 @@ def main():
                         start_from=200,
                         max_items=100)
     records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
+    rgraph.serialize(format='json-ld', 
+                            destination='TEST-oai-kc.json-ld',  
+                            auto_compact=True)
     logger.info(f'got {records} records ')
     assert records == 100
 

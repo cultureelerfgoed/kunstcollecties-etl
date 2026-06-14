@@ -12,7 +12,7 @@ from rdflib.namespace import RDF, SDO, XSD
 import uritools
 import adlib_xpaths as xpath
 import adlib_tags as tags
-import adlibxml_to_schemaorg_mapping as mapping
+import oai_to_schemaorg_mapping as mapping
 
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 MODIFIED_ON_OR_AFTER = datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970-01-01'), '%Y-%m-%d')
@@ -62,18 +62,19 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, ns_pfx=None, ns=None) ->
 
     # add defined terms
     for key, ref in mapping.DEFINED_TERM_FIELD_MAPPING.items():
-        for item in tree.findall(key):
-            if item.text != None and item.text.strip() != '':
-                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], item.text,  mapping.DEFINED_TERM_TYPES[key][0]))
+        for dt_item in findall_ns_wrapper(tree, key, ns_pfx, ns):
+            dt_name = get_text_from_tree(dt_item, ref[1], ns_pfx, ns)
+            if dt_name:
+                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], dt_name,  mapping.DEFINED_TERM_TYPES[key][0]))
+                
                 target_graph.add((record_object_node, ref[0], dt_url))
+                target_graph.add((dt_url, SDO.name, Literal(dt_name, datatype=XSD.string)))
                 for item_type in mapping.DEFINED_TERM_TYPES[key]:
                     target_graph.add((dt_url, RDF.type, item_type))
-                target_graph.add((dt_url, SDO.name, Literal(item.text, datatype=XSD.string)))
 
-                # check for enrichment
-                term_uri = get_text_from_tree(tree, ref[2], ns_pfx, ns)
-                if term_uri:
-                    target_graph.add((dt_url, SDO.sameAs, URIRef(term_uri)))
+                dt_same_as = get_text_from_tree(dt_item, ref[2], ns_pfx, ns)
+                if dt_same_as:
+                    target_graph.add((dt_url, SDO.sameAs, URIRef(dt_same_as)))
 
     # add creator, creators are always persons in version 0.1 of datamodel
     sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], priref, SDO.Person)
@@ -87,11 +88,13 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, ns_pfx=None, ns=None) ->
                 uri_ref = urlparse(item_text.strip())
                 if (uri_ref.scheme != '' and uri_ref.netloc != ''):
                     target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), datatype=ref[2])))
-            else:
+            elif ref[2]:
                 target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), datatype=ref[2])))
+            else:
+                target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
 
     # Link to image of object at memorix based on reproduction reference
-    for index, r_ref in enumerate(tree.findall(xpath.REPRODUCTION_REFERENCE)):
+    for index, r_ref in enumerate(findall_ns_wrapper(tree, xpath.REPRODUCTION_REFERENCE, ns_pfx, ns)):
         # check presence of reproduction reference and that the assigned rights permit publication 
         if r_ref.text and get_text_from_tree(tree, xpath.RIGHTS_ASSIGNED_VALUE, ns_pfx, ns) in config['RIGHTS_ASSIGNED_ALLOWLIST']:
             r_ref_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], r_ref.text, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1])
@@ -101,35 +104,37 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, ns_pfx=None, ns=None) ->
             target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][2], uritools.get_memorix_uri_from_reference(r_ref.text)))
 
     # Dimensions
-    for index, dimension in enumerate(tree.findall(xpath.DIMENSION)):
+    qv_list = findall_ns_wrapper(tree, xpath.DIMENSION, ns_pfx, ns)
+    for qv_dimension in qv_list:
         qv_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], str(uuid.uuid4()), SDO.QuantitativeValue)
         
         try:
-            d_unit = next(dimension.iterfind(tags.DIMENSION_UNIT))
+            d_unit = get_text_from_tree(qv_dimension, xpath.DIMENSION_UNIT, ns_pfx, ns)
             target_graph.add((qv_node, RDF.type, SDO.QuantitativeValue))
-            if d_unit.text:
-                target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_UNIT], Literal(d_unit.text, datatype=XSD.string)))
+            if d_unit:
+                target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_UNIT], Literal(d_unit, datatype=XSD.string)))
             
-            d_val = next(dimension.iterfind(tags.DIMENSION_VALUE))
-            if d_val.text:
-                target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_VALUE], Literal(d_val.text, datatype=XSD.string)))
+            #d_val = next(dimension.iterfind(tags.DIMENSION_VALUE))
+            d_val = get_text_from_tree(qv_dimension, xpath.DIMENSION_VALUE, ns_pfx, ns)
+            if d_val:
+                target_graph.add((qv_node, mapping.DIMENSION_MAPPING[xpath.DIMENSION_VALUE], Literal(d_val, datatype=XSD.string)))
             
-            d_type = next(dimension.iterfind(tags.DIMENSION_TYPE))
-            if d_type.text == 'hoogte':
+            #d_type = next(dimension.iterfind(tags.DIMENSION_TYPE))
+            d_type = get_text_from_tree(qv_dimension, xpath.DIMENSION_TYPE, ns_pfx, ns)
+            if d_type == 'hoogte':
                 target_graph.add((qv_node, SDO.valueReference, Literal('hoogte', lang='nl')))
                 target_graph.add((record_object_node, SDO.height, qv_node))
-            elif d_type.text == 'breedte':
+            elif d_type == 'breedte':
                 target_graph.add((qv_node, SDO.valueReference, Literal('breedte', lang='nl')))
                 target_graph.add((record_object_node, SDO.width, qv_node))
-            elif d_type.text == 'diepte':
+            elif d_type == 'diepte':
                 target_graph.add((qv_node, SDO.valueReference, Literal('diepte', lang='nl')))
                 target_graph.add((record_object_node, SDO.depth, qv_node))
-            elif d_type.text == 'gewicht':
+            elif d_type == 'gewicht':
                 target_graph.add((qv_node, SDO.valueReference, Literal('gewicht', lang='nl')))
                 target_graph.add((record_object_node, SDO.weight, qv_node))
-
         except StopIteration:
-            logger.error('Invalid Dimension: %s', ET.tostring(dimension))
+            logger.error('Invalid Dimension: %s', ET.tostring(qv_dimension))
             target_graph.remove((qv_node, None, None))
             target_graph.remove((None, None, qv_node))
             
@@ -143,6 +148,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, ns_pfx=None, ns=None) ->
         target_graph.add((record_object_node, SDO.copyrightHolder, sdo_rholder_node))
 
     return target_graph
+    
 
 def get_text_from_tree(tree: (ET.ElementTree | ET.Element), target_xpath: str, ns_pfx: Optional[str], ns: Optional[str]) -> Optional[str]:
     if ns_pfx and ns:
@@ -154,6 +160,16 @@ def get_text_from_tree(tree: (ET.ElementTree | ET.Element), target_xpath: str, n
         t_elem = tree.find(target_xpath)
     if t_elem is not None and t_elem.text:
         return t_elem.text
+    
+def findall_ns_wrapper(tree: (ET.ElementTree | ET.Element), target_xpath: str, ns_pfx: Optional[str], ns: Optional[str]) -> Optional[list[ET.Element]]:
+    if ns_pfx and ns:
+        xp_segms = re.split(r'\.//|\./|/', target_xpath)[1:]
+        for segment in xp_segms:
+            target_xpath = target_xpath.replace(segment, f'{ns_pfx}:{segment}')
+        t_elems = tree.findall(target_xpath, namespaces={ns_pfx:ns})
+    else:
+        t_elems = tree.findall(target_xpath)
+    return t_elems
 
 def make_statistics_from_string(xml: str) -> dict[str, int]:
     tree = ET.fromstring(xml)    
