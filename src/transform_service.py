@@ -7,12 +7,10 @@ import uuid
 import os
 from urllib.parse import urlparse
 import yaml
-from rdflib import Graph, Literal, URIRef
+from rdflib import Graph, Literal, Node, URIRef
 from rdflib.namespace import RDF, SDO, XSD
 import uritools
 import adlib_xpaths as xpath
-import adlib_tags as tags
-import oai_to_schemaorg_mapping as mapping
 
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 MODIFIED_ON_OR_AFTER = datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970-01-01'), '%Y-%m-%d')
@@ -20,7 +18,7 @@ MODIFIED_ON_OR_AFTER = datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970
 config = yaml.safe_load(open(CONFIG_PATH))
 logger = logging.getLogger(__name__)
 
-def parse_tree_to_graph(target_graph: Graph, tree: Any, ns_pfx=None, ns=None) -> Graph:
+def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, ns_pfx=None, ns=None) -> Graph:
     """ This function takes a Graph and an XML tree and parses the tree into the graph """
 
     # Adlib record priref unique identifier
@@ -61,20 +59,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, ns_pfx=None, ns=None) ->
             target_graph.add((record_object_node, SDO.identifier, property_node))
 
     # add defined terms
-    for key, ref in mapping.DEFINED_TERM_FIELD_MAPPING.items():
-        for dt_item in findall_ns_wrapper(tree, key, ns_pfx, ns):
-            dt_name = get_text_from_tree(dt_item, ref[1], ns_pfx, ns)
-            if dt_name:
-                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], dt_name,  mapping.DEFINED_TERM_TYPES[key][0]))
-                
-                target_graph.add((record_object_node, ref[0], dt_url))
-                target_graph.add((dt_url, SDO.name, Literal(dt_name, datatype=XSD.string)))
-                for item_type in mapping.DEFINED_TERM_TYPES[key]:
-                    target_graph.add((dt_url, RDF.type, item_type))
-
-                dt_same_as = get_text_from_tree(dt_item, ref[2], ns_pfx, ns)
-                if dt_same_as:
-                    target_graph.add((dt_url, SDO.sameAs, URIRef(dt_same_as)))
+    process_defined_terms(target_graph, tree, record_object_node, mapping.DEFINED_TERM_FIELD_MAPPING, mapping.DEFINED_TERM_TYPES, ns_pfx, ns)
 
     # add creator, creators are always persons in version 0.1 of datamodel
     sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], priref, SDO.Person)
@@ -92,6 +77,9 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, ns_pfx=None, ns=None) ->
                 target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), datatype=ref[2])))
             else:
                 target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
+    
+    process_defined_terms(target_graph, tree, sdo_creator_node, mapping.CREATOR_DEFINED_TERM_MAPPING, mapping.CREATOR_DEFINED_TERM_TYPES, ns_pfx, ns)
+
 
     # Link to image of object at memorix based on reproduction reference
     for index, r_ref in enumerate(findall_ns_wrapper(tree, xpath.REPRODUCTION_REFERENCE, ns_pfx, ns)):
@@ -149,7 +137,6 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, ns_pfx=None, ns=None) ->
 
     return target_graph
     
-
 def get_text_from_tree(tree: (ET.ElementTree | ET.Element), target_xpath: str, ns_pfx: Optional[str], ns: Optional[str]) -> Optional[str]:
     if ns_pfx and ns:
         xp_segms = re.split(r'\.//|\./|/', target_xpath)[1:]
@@ -170,6 +157,23 @@ def findall_ns_wrapper(tree: (ET.ElementTree | ET.Element), target_xpath: str, n
     else:
         t_elems = tree.findall(target_xpath)
     return t_elems
+
+def process_defined_terms(target_graph: Graph, tree: (ET.ElementTree | ET.Element), target_node: Node, field_mapping: dict[str|list], type_mapping: dict[str|list], ns_pfx: Optional[str], ns: Optional[str]):
+    # add defined terms
+    for key, ref in field_mapping.items():
+        for dt_item in findall_ns_wrapper(tree, key, ns_pfx, ns):
+            dt_name = get_text_from_tree(dt_item, ref[1], ns_pfx, ns)
+            if dt_name:
+                dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], dt_name,  type_mapping[key][0]))
+                
+                target_graph.add((target_node, ref[0], dt_url))
+                target_graph.add((dt_url, SDO.name, Literal(dt_name, datatype=XSD.string)))
+                for item_type in type_mapping[key]:
+                    target_graph.add((dt_url, RDF.type, item_type))
+
+                dt_same_as = get_text_from_tree(dt_item, ref[2], ns_pfx, ns)
+                if dt_same_as:
+                    target_graph.add((dt_url, SDO.sameAs, URIRef(dt_same_as)))
 
 def make_statistics_from_string(xml: str) -> dict[str, int]:
     tree = ET.fromstring(xml)    

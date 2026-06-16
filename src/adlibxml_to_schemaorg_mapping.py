@@ -12,7 +12,7 @@ RECORD_OBJECT_TYPES = [
 ### Velden in DEFINED_TERM_TYPES kunnen verrijkingen bevatten. ###
 # in DEFINED_TERM_TYPES is aangegeven wat de rdf:Type van de defined term is per xpath
 DEFINED_TERM_TYPES = {
-    adlib_xpaths.MATERIAL_ITEM: [SDO.Product, SDO.DefinedTerm],
+    adlib_xpaths.MATERIAL: [SDO.Product, SDO.DefinedTerm],
     adlib_xpaths.OBJECT_CATEGORY: [SDO.DefinedTerm],
     adlib_xpaths.ASSOCIATION_SUBJECT: [SDO.DefinedTerm],
     adlib_xpaths.PRODUCTION_PLACE_SRC_TERM: [SDO.Place, SDO.DefinedTerm]
@@ -20,7 +20,7 @@ DEFINED_TERM_TYPES = {
 # in DEFINED_TERM_FIELD_MAPPING is opgenomen wat de verhouding is met het CreativeWork object, dus welk predicaat gebruikt wordt
 # daarna komt de term en daarna de uri
 DEFINED_TERM_FIELD_MAPPING = {
-    adlib_xpaths.MATERIAL_ITEM: [SDO.material, adlib_xpaths.MATERIAL_ITEM, adlib_xpaths.MATERIAL_SRC_URI],
+    adlib_xpaths.MATERIAL: [SDO.material, adlib_xpaths.MATERIAL_NAME, adlib_xpaths.MATERIAL_SRC_URI],
     adlib_xpaths.OBJECT_CATEGORY: [SDO.genre, adlib_xpaths.OBJECT_CATEGORY, adlib_xpaths.OBJECT_CATEGORY_SRC_URI],
     adlib_xpaths.ASSOCIATION_SUBJECT: [SDO.additionalType, adlib_xpaths.ASSOCIATION_SUBJECT, adlib_xpaths.ASSOCIATION_SUBJECT_SRC_URI],
     adlib_xpaths.PRODUCTION_PLACE_SRC_TERM: [SDO.locationCreated, adlib_xpaths.PRODUCTION_PLACE_SRC_TERM, adlib_xpaths.PRODUCTION_PLACE_SRC_URI],

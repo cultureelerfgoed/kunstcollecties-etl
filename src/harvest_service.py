@@ -3,6 +3,7 @@ import traceback
 import logging
 import datetime
 import argparse
+from rdflib import Graph
 import yaml
 import uritools
 from rdflib.namespace import SDO, RDF
@@ -36,17 +37,17 @@ def main():
         CHUNK_SIZE = args.chunks
     
     logger.info('Starting harvest of \n endpoint: %s \n enriching terms: %s \n pushing to: %s', config['SRC_URI'], config['ENRICH_TERMS'], config['BASE_URI']+config['COLLECTION_ID'])
-    total = 0
+    persistant_state = {
+                "page": 0,
+                "total": 0,
+                "resumptionToken": "",
+        }
+    
     for index in range(0, int(MAX_RECORDS/CHUNK_SIZE)):
         records = 0
-        rgraph = uritools.get_organization(config['ORG_URI'], 
-                                            config['ORG_NAME'], 
-                                            config['ORG_SAME_AS'],
-                                            config['ORG_CONTACT_NAME'],
-                                            config['ORG_CONTACT_EMAIL'],
-                                            config['ORG_ISIL'],
-                                            config['ORG_ALTNAME'])
+        rgraph = Graph()
         a = datetime.datetime.now().replace(microsecond=0)
+
         try:
             rgraph = harvester.harvest(rgraph, 
                         base_url=config['SRC_URI'], 
@@ -54,20 +55,22 @@ def main():
                         metadata_prefix='rs', 
                         set_spec=config['SRC_DB'],
                         max_items=CHUNK_SIZE,
-                        start_from=index*CHUNK_SIZE)
+                        state=persistant_state)
             records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
+
         except TypeError as e: # Exception as e:
             logger.error('Harvesting failed: %s', str(traceback.format_exception(e)))
         
         if records == 0:
-            logger.info('Reached end of records from source API, total retrieved records: %i, exiting..', total)
+            logger.info('Reached end of records from source API, total retrieved records: %i, exiting..', persistant_state.get("total"))
             break
         else:
             b = datetime.datetime.now().replace(microsecond=0)
             dt = b-a
-            total = total + records
+            total = int(persistant_state.get("total"))
             dt_avg = (dt/records) / datetime.timedelta(milliseconds=1)
-            logger.info('Finished after %s, average time spent per record %s ms.', str(dt), str(dt_avg))
+            logger.info('Finished chunk after %s, got %i records, avg time spent per record %s ms, total records harvested: %i.', str(dt), records, str(dt_avg), total)
+
             path = f'kc-pt-{index}.jsonld'
             logger.info('Writing  %s', f'{OUTPUT_FILE_FORMAT} file to {path}')
             rgraph.serialize(format=OUTPUT_FILE_FORMAT, 

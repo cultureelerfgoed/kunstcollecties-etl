@@ -72,6 +72,10 @@ RIGHTS_HOLDER = './/rights.holder'
 RIGHTS_NOTES = './/rights.notes'
 RIGHTS_TYPE = './/rights.type'
 
+#Alternative_number
+#alternative_number
+#alternative_number.type
+
 TITLE = './/Title'
 TITLE_TEXT = './/Title/title'
 

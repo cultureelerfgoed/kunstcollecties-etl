@@ -1,6 +1,4 @@
 import logging
-import xml.etree.ElementTree as ET
-import pytest
 from rdflib.namespace import SDO, RDF
 from rdflib import Graph
 import yaml

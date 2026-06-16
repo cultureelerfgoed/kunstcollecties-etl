@@ -5,7 +5,8 @@ import traceback
 import xml.etree.ElementTree as ET
 from rdflib import Graph
 from requests import HTTPError
-import adlib_transformer
+import transform_service
+import adlibxml_to_schemaorg_mapping as mapping
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +54,9 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
                 # parse adlibXML
                 r_iter = r_iter + 1
                 try:
-                    adlib_transformer.parse_tree_to_graph(target_graph, record)
+                    transform_service.parse_tree_to_graph(target_graph, record, mapping)
                     if make_stats:
-                        stats = adlib_transformer.combine_stats(stats, adlib_transformer.make_statistics_from_string(str(ET.tostring(record))))
+                        stats = transform_service.combine_stats(stats, transform_service.make_statistics_from_string(str(ET.tostring(record))))
                 except (AssertionError, TypeError) as te:
                     logger.warning('Error during transformation: %s', str(traceback.format_exception(te)))
         else:
@@ -65,5 +66,5 @@ def harvest(target_graph: Graph, endpoint: str, database='collect', search='all'
         page = page + 1
 
     if make_stats:
-        adlib_transformer.print_stats(stats)
+        transform_service.print_stats(stats)
     return target_graph

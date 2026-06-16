@@ -31,6 +31,8 @@ INSCRIPTION_DESCRIPTION = './/Inscription/inscription.description'
 
 MATERIAL = './/Material'
 MATERIAL_ITEM = './/Material/material'
+MATERIAL_NAME = './/material'
+
 MATERIAL_PART = './/Material/material.part'
 MATERIAL_SRC_URI = './/Material/material/Source/source.number'
 MATERIAL_TERM = './/Material/material/term'

@@ -52,13 +52,28 @@ CREATOR_MAPPING = {
     oai_xpaths.RKDARTISTS: [SDO.sameAs, URIRef, None], 
     oai_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, Literal, XSD.string],
     oai_xpaths.CREATOR_DATE_OF_BIRTH: [SDO.birthDate, Literal, XSD.string],
-    oai_xpaths.CREATOR_ROLE: [SDO.hasOccupation, Literal, XSD.string],
+}
+
+CREATOR_DEFINED_TERM_TYPES = {
+    oai_xpaths.CREATOR_ROLE: [SDO.Occupation, SDO.DefinedTerm],
+}
+
+CREATOR_DEFINED_TERM_MAPPING = {
+    oai_xpaths.CREATOR_ROLE: [SDO.hasOccupation, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
 }
 
 # mapping voor simpele afmetingen
 DIMENSION_MAPPING = {
     oai_xpaths.DIMENSION_UNIT: SDO.unitText,
     oai_xpaths.DIMENSION_VALUE: SDO.value,
+}
+
+# mapping voor andere tijdsaanduidingen
+TEMPORAL_INFO_MAPPING = {
+    #oai_xpaths.PRODUCTION_DATE_START: [],
+    oai_xpaths.PRODUCTION_DATE_END: [SDO.dateCreated, SDO.temporal],
+    oai_xpaths.CREATOR_DATE_OF_BIRTH: [SDO.birthDate, SDO.birthDate],
+    oai_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, SDO.deathDate],
 }
 
 # mapping voor link naar afbeelding

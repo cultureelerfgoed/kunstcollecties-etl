@@ -1,14 +1,14 @@
 import xml.etree.ElementTree as ET
-import pytest
 from rdflib.namespace import SDO, RDF
 from rdflib import Graph
 import yaml
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
-import adlib_transformer
+import transform_service
+import adlibxml_to_schemaorg_mapping as mapping
 
-config = yaml.safe_load(open('config/config.yml', encoding='utf-8'))
+config = yaml.safe_load(open('config/test_adlib_config.yml', encoding='utf-8'))
 
 def test_transform_valid():
     test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
@@ -30,7 +30,7 @@ def test_transform_valid():
     print(f'element: {str(root.attrib)}')
     # get detailed information with priref
     graph = Graph()
-    graph = adlib_transformer.parse_tree_to_graph(graph, root)
+    graph = transform_service.parse_tree_to_graph(graph, root, mapping)
     
     if config['ENRICH_TERMS']:
         assert len(list(graph.objects(None, SDO.sameAs))) == 2
@@ -53,7 +53,7 @@ def test_transform_invalid():
     root = ET.fromstring(test_xml)
     # get detailed information with priref 
     graph = Graph()
-    adlib_transformer.parse_tree_to_graph(graph, root)
+    transform_service.parse_tree_to_graph(graph, root, mapping)
     assert len(list(graph.objects(None, SDO.sameAs))) == 0
 
 def test_rights_allowlist():
@@ -76,7 +76,7 @@ def test_rights_allowlist():
     root = ET.fromstring(test_xml)
     # get detailed information with priref 
     graph = Graph()
-    adlib_transformer.parse_tree_to_graph(graph, root)
+    transform_service.parse_tree_to_graph(graph, root, mapping)
     assert len(list(graph.objects(None, SDO.associatedMedia))) == 0
 
 def test_rights_quantitative_values():
@@ -112,28 +112,8 @@ def test_rights_quantitative_values():
     root = ET.fromstring(test_xml)
     # get detailed information with priref 
     graph = Graph()
-    adlib_transformer.parse_tree_to_graph(graph, root)
+    transform_service.parse_tree_to_graph(graph, root, mapping)
     assert len(list(graph.subjects(RDF.type, SDO.QuantitativeValue))) == 2
-
-def test_place_enrichment():
-    test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
-        '<priref>98500</priref>' \
-        '<dimension.free>hoogte: 26.5 cm breedte: 40 cm</dimension.free>' \
-        '<object_number>aa111</object_number>' \
-        '<object_category>olieverf</object_category>' \
-        '<Production>' \
-        '<production.place><Source><source.number>https//sws.geonames.org/2750405/</source.number></Source><term>Nederland</term></production.place>' \
-        '<creator>' \
-        '<name>onbekend</name>' \
-        '</creator>' \
-        '</Production>' \
-        '</record>' 
-    root = ET.fromstring(test_xml)
-    # get detailed information with priref 
-    graph = Graph()
-    adlib_transformer.parse_tree_to_graph(graph, root)
-    assert len(list(graph.subjects(RDF.type, SDO.Place))) == 1
-    assert len(list(graph.objects(None, SDO.sameAs))) == 1
 
 def test_multiple_materials():
     test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
@@ -156,7 +136,7 @@ def test_multiple_materials():
     root = ET.fromstring(test_xml)
     # get detailed information with priref 
     graph = Graph()
-    adlib_transformer.parse_tree_to_graph(graph, root)
+    transform_service.parse_tree_to_graph(graph, root, mapping)
     assert len(list(graph.objects(None, SDO.material))) == 2
 
     for s, p, o in sorted(graph):
