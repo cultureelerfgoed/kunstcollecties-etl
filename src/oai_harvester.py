@@ -97,7 +97,7 @@ def safe_open_url(req: urllib.request.Request, retries: int = 3, backoff: float 
                     pass
             if attempt == retries - 1:
                 raise
-            logger.info(f"HTTPError {status}: {e.reason}. Wachten {wait:.1f}s en opnieuw proberen...")
+            logger.warning(f"HTTPError {status}: {e.reason}. Wachten {wait:.1f}s en opnieuw proberen...")
             time.sleep(wait)
 
         except Exception as e:
@@ -319,7 +319,7 @@ def harvest(target_graph: Graph, base_url: str, verb: str, metadata_prefix: Opti
             # Volgende pagina
             rt_el = root.find(".//oai:resumptionToken", NS)
             rt = rt_el.text.strip() if rt_el is not None and rt_el.text else ""
-            logger.info(f"Pagina {page}, {num_items} items total. ResumptionToken {'aanwezig' if rt else 'ontbreekt'}.")
+            logger.debug(f"Pagina {page}, {num_items} items total. ResumptionToken {'aanwezig' if rt else 'ontbreekt'}.")
 
             state.update({
                 "file_index": file_index,
