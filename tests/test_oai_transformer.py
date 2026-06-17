@@ -7,7 +7,7 @@ import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
 import transform_service
 import oai_to_schemaorg_mapping as mapping
-
+import oai_xpaths as xpath
 
 config = yaml.safe_load(open('config/test_oai_config.yml', encoding='utf-8'))
 
@@ -31,13 +31,13 @@ def test_transform_valid():
     print(f'element: {str(root.attrib)}')
     # get detailed information with priref
     graph = Graph()
-    graph = transform_service.parse_tree_to_graph(graph, root, mapping)
+    graph = transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
     
     if config['ENRICH_TERMS']:
         assert len(list(graph.objects(None, SDO.sameAs))) == 2
     else:
         assert len(list(graph.objects(None, SDO.sameAs))) == 1
-    assert len(list(graph.objects(None, SDO.propertyID))) == 1
+    assert len(list(graph.objects(None, SDO.propertyID))) == 2
     assert len(list(graph.objects(None, SDO.associatedMedia))) == 1
 
 
@@ -54,7 +54,7 @@ def test_transform_invalid():
     root = ET.fromstring(test_xml)
     # get detailed information with priref 
     graph = Graph()
-    transform_service.parse_tree_to_graph(graph, root, mapping)
+    transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
     assert len(list(graph.objects(None, SDO.sameAs))) == 0
 
 def test_rights_allowlist():
@@ -77,7 +77,7 @@ def test_rights_allowlist():
     root = ET.fromstring(test_xml)
     # get detailed information with priref 
     graph = Graph()
-    transform_service.parse_tree_to_graph(graph, root, mapping)
+    transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
     assert len(list(graph.objects(None, SDO.associatedMedia))) == 0
 
 def test_rights_quantitative_values():
@@ -113,7 +113,7 @@ def test_rights_quantitative_values():
     root = ET.fromstring(test_xml)
     # get detailed information with priref 
     graph = Graph()
-    transform_service.parse_tree_to_graph(graph, root, mapping)
+    transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
     assert len(list(graph.subjects(RDF.type, SDO.QuantitativeValue))) == 2
 
 def test_place_enrichment():
@@ -132,7 +132,7 @@ def test_place_enrichment():
     root = ET.fromstring(test_xml)
     # get detailed information with priref 
     graph = Graph()
-    transform_service.parse_tree_to_graph(graph, root, mapping)
+    transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
     assert len(list(graph.subjects(RDF.type, SDO.Place))) == 1
     assert len(list(graph.objects(None, SDO.sameAs))) == 1
 
@@ -157,7 +157,7 @@ def test_multiple_materials():
     root = ET.fromstring(test_xml)
     # get detailed information with priref 
     graph = Graph()
-    transform_service.parse_tree_to_graph(graph, root, mapping)
+    transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
     assert len(list(graph.objects(None, SDO.material))) == 2
 
     for s, p, o in sorted(graph):

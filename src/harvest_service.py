@@ -61,7 +61,7 @@ def main():
         except TypeError as e: # Exception as e:
             logger.error('Harvesting failed: %s', str(traceback.format_exception(e)))
         
-        if records == 0:
+        if records == 0 or persistant_state.get('resumptionToken').strip() == '':
             logger.info('Reached end of records from source API, total retrieved records: %i, exiting..', persistant_state.get("total"))
             break
         else:
@@ -70,7 +70,7 @@ def main():
             total = int(persistant_state.get("total"))
             dt_avg = (dt/records) / datetime.timedelta(milliseconds=1)
             logger.info('Finished chunk after %s, got %i records, avg time spent per record %s ms, total records harvested: %i.', str(dt), records, str(dt_avg), total)
-
+            logger.info('rt: %s', persistant_state.get('resumptionToken'))
             path = f'kc-pt-{index}.jsonld'
             logger.info('Writing  %s', f'{OUTPUT_FILE_FORMAT} file to {path}')
             rgraph.serialize(format=OUTPUT_FILE_FORMAT, 

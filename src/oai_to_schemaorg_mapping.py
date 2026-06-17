@@ -27,9 +27,10 @@ DEFINED_TERM_FIELD_MAPPING = {
 } 
 
 # mapping voor velden die als property-value toegevoegd worden 
-# PropertyValue mapping: map field a: [b, c] to SDO.value [a], SDO.propertyID [b], SDO.description [c], 
+# PropertyValue mapping: map field a: [b, c] to SDO.value [a], predicate [b], SDO.propertyID [c], SDO.description [d], 
 PROPERTY_VALUE_MAPPING = {
-    oai_xpaths.OBJECT_NUMBER: [SDO.identifier, 'AdlibXML object_number']
+    oai_xpaths.OBJECT_NUMBER: [SDO.identifier, Literal('https://documentation.axiell.com/alm/en/index.html?ds_eiefxml.html', datatype=XSD.anyURI), 'AdlibXML object_number'],
+    oai_xpaths.PRIREF: [SDO.identifier, Literal('https://documentation.axiell.com/alm/en/index.html?ds_eiefxml.html', datatype=XSD.anyURI), 'AdlibXML priref'],
 }
 
 # directe attributen van het CreativeWork

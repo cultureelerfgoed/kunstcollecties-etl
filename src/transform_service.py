@@ -10,7 +10,6 @@ import yaml
 from rdflib import Graph, Literal, Node, URIRef
 from rdflib.namespace import RDF, SDO, XSD
 import uritools
-import adlib_xpaths as xpath
 
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 MODIFIED_ON_OR_AFTER = datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970-01-01'), '%Y-%m-%d')
@@ -18,7 +17,7 @@ MODIFIED_ON_OR_AFTER = datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970
 config = yaml.safe_load(open(CONFIG_PATH))
 logger = logging.getLogger(__name__)
 
-def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, ns_pfx=None, ns=None) -> Graph:
+def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any, ns_pfx=None, ns=None) -> Graph:
     """ This function takes a Graph and an XML tree and parses the tree into the graph """
 
     # Adlib record priref unique identifier
@@ -51,12 +50,12 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, ns_pfx=Non
     for key, ref in mapping.PROPERTY_VALUE_MAPPING.items():
         item_text = get_text_from_tree(tree, key, ns_pfx, ns)
         if item_text:
-            property_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], priref, SDO.PropertyValue)
+            property_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], str(uuid.uuid4()), SDO.PropertyValue)
             target_graph.add((property_node, RDF.type, SDO.PropertyValue))
             target_graph.add((property_node, SDO.value, Literal(item_text, datatype=XSD.string)))
-            target_graph.add((property_node, SDO.propertyID, ref[0]))
-            target_graph.add((property_node, SDO.description, Literal(ref[1], datatype=XSD.string)))
-            target_graph.add((record_object_node, SDO.identifier, property_node))
+            target_graph.add((property_node, SDO.propertyID, ref[1]))
+            target_graph.add((property_node, SDO.description, Literal(ref[2], datatype=XSD.string)))
+            target_graph.add((record_object_node, ref[0], property_node))
 
     # add defined terms
     process_defined_terms(target_graph, tree, record_object_node, mapping.DEFINED_TERM_FIELD_MAPPING, mapping.DEFINED_TERM_TYPES, ns_pfx, ns)
@@ -79,7 +78,6 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, ns_pfx=Non
                 target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
     
     process_defined_terms(target_graph, tree, sdo_creator_node, mapping.CREATOR_DEFINED_TERM_MAPPING, mapping.CREATOR_DEFINED_TERM_TYPES, ns_pfx, ns)
-
 
     # Link to image of object at memorix based on reproduction reference
     for index, r_ref in enumerate(findall_ns_wrapper(tree, xpath.REPRODUCTION_REFERENCE, ns_pfx, ns)):
@@ -124,8 +122,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, ns_pfx=Non
         except StopIteration:
             logger.error('Invalid Dimension: %s', ET.tostring(qv_dimension))
             target_graph.remove((qv_node, None, None))
-            target_graph.remove((None, None, qv_node))
-            
+            target_graph.remove((None, None, qv_node))        
 
     # rightsholder
     rholder_text = get_text_from_tree(tree, xpath.RIGHTS_HOLDER, ns_pfx, ns)

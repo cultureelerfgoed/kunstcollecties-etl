@@ -27,9 +27,10 @@ DEFINED_TERM_FIELD_MAPPING = {
 } 
 
 # mapping voor velden die als property-value toegevoegd worden 
-# PropertyValue mapping: map field a: [b, c] to SDO.value [a], SDO.propertyID [b], SDO.description [c], 
+# PropertyValue mapping: map field a: [b, c] to SDO.value [a], predicate [b], SDO.propertyID [c], SDO.description [d], 
 PROPERTY_VALUE_MAPPING = {
-    adlib_xpaths.OBJECT_NUMBER: [SDO.identifier, 'AdlibXML object_number']
+    adlib_xpaths.OBJECT_NUMBER: [SDO.identifier, Literal('https://documentation.axiell.com/alm/en/index.html?ds_eiefxml.html', datatype=XSD.anyURI), 'AdlibXML object_number'],
+    adlib_xpaths.PRIREF: [SDO.identifier, Literal('https://documentation.axiell.com/alm/en/index.html?ds_eiefxml.html', datatype=XSD.anyURI), 'AdlibXML priref'],
 }
 
 # directe attributen van het CreativeWork
@@ -53,6 +54,12 @@ CREATOR_MAPPING = {
     adlib_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, Literal, XSD.string],
     adlib_xpaths.CREATOR_DATE_OF_BIRTH: [SDO.birthDate, Literal, XSD.string],
     adlib_xpaths.CREATOR_ROLE: [SDO.hasOccupation, Literal, XSD.string],
+}
+
+CREATOR_DEFINED_TERM_TYPES = {
+}
+
+CREATOR_DEFINED_TERM_MAPPING = {
 }
 
 # mapping voor simpele afmetingen

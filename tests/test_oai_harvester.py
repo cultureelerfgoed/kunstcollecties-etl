@@ -18,6 +18,10 @@ logging.basicConfig(
 
 def test_harvest():
     print('Starting harvest test.')
+    persistant_state = {
+                "total": 0,
+                "resumptionToken": "",
+        }
     rgraph = uritools.get_organization(config['ORG_URI'], 
                                         config['ORG_NAME'], 
                                         config['ORG_SAME_AS'],
@@ -31,8 +35,8 @@ def test_harvest():
                         verb='ListRecords', 
                         metadata_prefix='rs', 
                         set_spec=config['SRC_DB'],
-                        max_items=100,
-                        start_from=3000)
+                        state=persistant_state,
+                        max_items=100)
     records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
     assert records == 100
     

@@ -91,7 +91,7 @@ TECHNIQUE_URI = './/Technique/technique/Source/source.number'
 OBJECT_NUMBER = './/object_number'
 
 PART = './/part'
-PRIREF = './/priref'
+PRIREF = './priref'
 MODIFICATION = './/modification'
 
 RECORD_TYPE = './/record_type'
