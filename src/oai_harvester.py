@@ -189,7 +189,6 @@ def harvest(target_graph: Graph, base_url: str, metadata_prefix: Optional[str], 
 
             if state.get("resumptionToken") and state.get("resumptionToken").strip() != '':
                 params["resumptionToken"] = state.get("resumptionToken")
-                logger.info('rt: %s', state.get("resumptionToken"))
 
             url = build_url(base_url, params)
             root, text = fetch_and_parse(url, headers, retries, backoff)
@@ -200,11 +199,8 @@ def harvest(target_graph: Graph, base_url: str, metadata_prefix: Optional[str], 
             if verb == "ListRecords":
                 elements = root.findall(".//oai:metadata/oai:record", NS)
  
-
-            logger.info('%i record elements', len(elements))
             for element in elements:
                 try:
-                    before = len(target_graph)
                     transform_service.parse_tree_to_graph(target_graph, element, mapping, xpath, 'ns0', 'http://www.openarchives.org/OAI/2.0/')
                 except (AssertionError, TypeError, Exception) as te:
                     logger.warning('Error during transformation: %s', str(traceback.format_exception(te)))

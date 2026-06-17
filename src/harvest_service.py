@@ -38,7 +38,6 @@ def main():
     
     logger.info('Starting harvest of \n endpoint: %s \n enriching terms: %s \n pushing to: %s', config['SRC_URI'], config['ENRICH_TERMS'], config['BASE_URI']+config['COLLECTION_ID'])
     persistant_state = {
-                "page": 0,
                 "total": 0,
                 "resumptionToken": "",
         }
