@@ -5,7 +5,6 @@ import datetime
 import argparse
 from rdflib import Graph
 import yaml
-import uritools
 from rdflib.namespace import SDO, RDF
 import oai_harvester as harvester
 
