@@ -47,8 +47,8 @@ def test_transform_invalid():
         '<Production>' \
         '<creator>' \
         '<name>onbekend</name>' \
+        '<Source><source.number>0000 0000 8225 9251</source.number></Source>' \
         '</creator>' \
-        '<rkdartists>0000 0000 8225 9251</rkdartists>' \
         '</Production>' \
         '</record>' 
     root = ET.fromstring(test_xml)

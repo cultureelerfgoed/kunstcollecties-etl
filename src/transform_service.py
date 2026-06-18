@@ -67,14 +67,11 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
     for key, ref in mapping.CREATOR_MAPPING.items():
         item_text = get_text_from_tree(tree, key, ns_pfx, ns)
         if item_text:
-            if ref[2] == XSD.anyURI:
-                # validate uri
-                uri_ref = urlparse(item_text.strip())
-                if (uri_ref.scheme != '' and uri_ref.netloc != ''):
-                    target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), datatype=ref[2])))
-            elif ref[2]:
+            if ref[1] == URIRef and uritools.is_valid_uri(item_text):
+                target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
+            elif ref[1] == Literal and ref[2]:
                 target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), datatype=ref[2])))
-            else:
+            elif ref[1] == Literal:
                 target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
     
     process_defined_terms(target_graph, tree, sdo_creator_node, mapping.CREATOR_DEFINED_TERM_MAPPING, mapping.CREATOR_DEFINED_TERM_TYPES, ns_pfx, ns)
@@ -169,7 +166,7 @@ def process_defined_terms(target_graph: Graph, tree: (ET.ElementTree | ET.Elemen
                     target_graph.add((dt_url, RDF.type, item_type))
 
                 dt_same_as = get_text_from_tree(dt_item, ref[2], ns_pfx, ns)
-                if dt_same_as:
+                if dt_same_as and uritools.is_valid_uri(dt_same_as):
                     target_graph.add((dt_url, SDO.sameAs, URIRef(dt_same_as)))
 
 def make_statistics_from_string(xml: str) -> dict[str, int]:

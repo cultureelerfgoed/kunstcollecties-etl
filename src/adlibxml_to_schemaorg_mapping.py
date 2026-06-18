@@ -1,5 +1,5 @@
 from rdflib.namespace import SDO, XSD
-from rdflib import Literal
+from rdflib import Literal, URIRef
 import adlib_xpaths
 
 # Records zijn van de volgende types.
@@ -50,7 +50,7 @@ RIGHTS_MAPPING = {
 # mapping voor attributen mbt maker, creator is altijd een persoon
 CREATOR_MAPPING = {
     adlib_xpaths.CREATOR_NAME: [SDO.name, Literal, XSD.string], 
-    adlib_xpaths.RKDARTISTS: [SDO.sameAs, Literal, XSD.anyURI], 
+    adlib_xpaths.RKDARTISTS: [SDO.sameAs, URIRef, None], 
     adlib_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, Literal, XSD.string],
     adlib_xpaths.CREATOR_DATE_OF_BIRTH: [SDO.birthDate, Literal, XSD.string],
     adlib_xpaths.CREATOR_ROLE: [SDO.hasOccupation, Literal, XSD.string],
