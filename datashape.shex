@@ -32,51 +32,66 @@ PREFIX xml: <http://www.w3.org/XML/1998/namespace/>
 :CreativeWork
 {
    rdf:type  [schema:CreativeWork]  ;                          # 100.0 %
-   rdf:type  [schema:ItemList]  ;                              # 100.0 %
    rdf:type  [schema:ArchiveComponent]  ;                      # 100.0 %
-   schema:identifier  @:PropertyValue  {2};                    # 100.0 %
-   schema:isPartOf  IRI  ;                                     # 100.0 %
-   schema:genre  @:DefinedTerm  ;                              # 100.0 %
-   schema:name  xsd:string  +;                                 # 100.0 %
-            # 94.0 % obj: xsd:string. Cardinality: {2}
+   rdf:type  [schema:ItemList]  ;                              # 100.0 %
    schema:creator  @:Person  ;                                 # 100.0 %
-   schema:description  xsd:string  ;                           # 100.0 %
-   schema:about  @:DefinedTerm  *;
-            # 99.0 % obj: @:DefinedTerm. Cardinality: +
-            # 43.0 % obj: @:DefinedTerm. Cardinality: {2}
-            # 39.0 % obj: @:DefinedTerm. Cardinality: {3}
+   schema:isPartOf  IRI  ;                                     # 100.0 %
+   schema:identifier  @:PropertyValue  +;                      # 100.0 %
+            # 99.99172932330828 % obj: @:PropertyValue. Cardinality: {2}
+   schema:name  xsd:string  *;
+            # 98.5218045112782 % obj: xsd:string. Cardinality: +
+            # 94.58421052631579 % obj: xsd:string. Cardinality: {2}
    schema:material  @:DefinedTerm  *;
-            # 96.0 % obj: @:DefinedTerm. Cardinality: +
-            # 42.0 % obj: @:DefinedTerm. Cardinality: {2}
-            # 26.0 % obj: @:DefinedTerm. Cardinality: {3}
-            # 23.0 % obj: @:DefinedTerm. Cardinality: {1}
-   schema:size  xsd:string  ?;
-            # 95.0 % obj: xsd:string. Cardinality: {1}
+            # 96.4624060150376 % obj: @:DefinedTerm. Cardinality: +
+            # 54.75714285714286 % obj: @:DefinedTerm. Cardinality: {2}
+            # 25.617293233082705 % obj: @:DefinedTerm. Cardinality: {1}
+            # 12.290977443609021 % obj: @:DefinedTerm. Cardinality: {3}
+   schema:genre  @:DefinedTerm  *;
+            # 95.98496240601504 % obj: @:DefinedTerm. Cardinality: +
+            # 95.9375939849624 % obj: @:DefinedTerm. Cardinality: {1}
+   schema:description  xsd:string  ?;
+            # 95.92330827067669 % obj: xsd:string. Cardinality: {1}
    schema:dateCreated  xsd:string  ?;
-            # 95.0 % obj: xsd:string. Cardinality: {1}
+            # 89.81353383458647 % obj: xsd:string. Cardinality: {1}
+   schema:size  xsd:string  ?;
+            # 87.96616541353384 % obj: xsd:string. Cardinality: {1}
+   schema:about  @:DefinedTerm  *;
+            # 87.9218045112782 % obj: @:DefinedTerm. Cardinality: +
+            # 43.86992481203008 % obj: @:DefinedTerm. Cardinality: {2}
+            # 30.172932330827066 % obj: @:DefinedTerm. Cardinality: {1}
+            # 10.36390977443609 % obj: @:DefinedTerm. Cardinality: {3}
    schema:height  @:QuantitativeValue  *;
-            # 95.0 % obj: @:QuantitativeValue. Cardinality: +
-            # 94.0 % obj: @:QuantitativeValue. Cardinality: {1}
+            # 86.95187969924812 % obj: @:QuantitativeValue. Cardinality: +
+            # 83.99774436090226 % obj: @:QuantitativeValue. Cardinality: {1}
    schema:width  @:QuantitativeValue  *;
-            # 80.0 % obj: @:QuantitativeValue. Cardinality: +
-            # 79.0 % obj: @:QuantitativeValue. Cardinality: {1}
-   schema:locationCreated  @:DefinedTerm  ?;
-            # 78.0 % obj: @:DefinedTerm. Cardinality: {1}
-   schema:depth  @:QuantitativeValue  ?;
-            # 74.0 % obj: @:QuantitativeValue. Cardinality: {1}
-   schema:associatedMedia  @:MediaObject  *
-            # 61.0 % obj: @:MediaObject. Cardinality: +
-            # 48.0 % obj: @:MediaObject. Cardinality: {1}
-            # 12.0 % obj: @:MediaObject. Cardinality: {2}
+            # 78.53157894736842 % obj: @:QuantitativeValue. Cardinality: +
+            # 75.52105263157894 % obj: @:QuantitativeValue. Cardinality: {1}
+   schema:locationCreated  @:DefinedTerm  *;
+            # 26.881203007518796 % obj: @:DefinedTerm. Cardinality: +
+            # 26.793984962406014 % obj: @:DefinedTerm. Cardinality: {1}
+   schema:associatedMedia  @:MediaObject  *;
+            # 23.031578947368423 % obj: @:MediaObject. Cardinality: +
+            # 17.89548872180451 % obj: @:MediaObject. Cardinality: {1}
+   schema:depth  @:QuantitativeValue  *
+            # 13.784962406015039 % obj: @:QuantitativeValue. Cardinality: +
+            # 13.628571428571428 % obj: @:QuantitativeValue. Cardinality: {1}
 }  
 
 
 :Person
 {
    rdf:type  [schema:Person]  ;                                # 100.0 %
-   schema:name  xsd:string  ;                                  # 100.0 %
-   schema:hasOccupation  @:DefinedTerm  ?
-            # 12.0 % obj: @:DefinedTerm. Cardinality: {1}
+   schema:name  xsd:string  ?;
+            # 99.1088213768064 % obj: xsd:string. Cardinality: {1}
+   schema:birthDate  xsd:string  ?;
+            # 63.4961181349827 % obj: xsd:string. Cardinality: {1}
+   schema:sameAs  IRI  ?;
+            # 60.711364321283526 % obj: IRI. Cardinality: {1}
+   schema:hasOccupation  @:DefinedTerm  *;
+            # 57.59726188596932 % obj: @:DefinedTerm. Cardinality: +
+            # 51.757243517070165 % obj: @:DefinedTerm. Cardinality: {1}
+   schema:deathDate  xsd:string  ?
+            # 40.91600533846132 % obj: xsd:string. Cardinality: {1}
 }  
 
 
@@ -85,37 +100,39 @@ PREFIX xml: <http://www.w3.org/XML/1998/namespace/>
    rdf:type  [schema:DefinedTerm]  ;                           # 100.0 %
    schema:name  xsd:string  ;                                  # 100.0 %
    rdf:type  [schema:Product]  ?;
-            # 42.857142857142854 % obj: schema:Product. Cardinality: {1}
-   schema:sameAs  IRI  ?
-            # 28.57142857142857 % obj: IRI. Cardinality: {1}
+            # 45.421624418003105 % obj: schema:Product. Cardinality: {1}
+   rdf:type  [schema:Place]  ?
+            # 27.004655975168134 % obj: schema:Place. Cardinality: {1}
 }  
 
 
 :QuantitativeValue
 {
    rdf:type  [schema:QuantitativeValue]  ;                     # 100.0 %
-   schema:unitText  xsd:string  ;                              # 100.0 %
-   schema:value  xsd:string  ;                                 # 100.0 %
+   schema:unitText  xsd:string  ?;
+            # 99.94830531331476 % obj: xsd:string. Cardinality: {1}
+   schema:value  xsd:string  ?;
+            # 99.93107375108634 % obj: xsd:string. Cardinality: {1}
    schema:valueReference  xsd:string  ?
-            # 94.3609022556391 % obj: xsd:string. Cardinality: {1}
+            # 93.05343282687525 % obj: xsd:string. Cardinality: {1}
 }  
 
 
 :MediaObject
 {
    rdf:type  [schema:MediaObject]  ;                           # 100.0 %
-   schema:contentUrl  xsd:anyURI  ;                            # 100.0 %
-   schema:encodesCreativeWork  @:CreativeWork  +               # 100.0 %
-            # 93.65079365079364 % obj: @:CreativeWork. Cardinality: {1}
+   schema:encodesCreativeWork  @:CreativeWork  +;              # 100.0 %
+            # 96.98383764734476 % obj: @:CreativeWork. Cardinality: {1}
+   schema:contentUrl  xsd:anyURI                               # 100.0 %
 }  
 
 
 :PropertyValue
 {
    rdf:type  [schema:PropertyValue]  ;                         # 100.0 %
-   schema:value  xsd:string  ;                                 # 100.0 %
    schema:propertyID  xsd:anyURI  ;                            # 100.0 %
-   schema:description  xsd:string                              # 100.0 %
+   schema:description  xsd:string  ;                           # 100.0 %
+   schema:value  xsd:string                                    # 100.0 %
 }  
 
 
