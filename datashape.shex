@@ -1,0 +1,121 @@
+PREFIX : <http://weso.es/shapes/>
+PREFIX brick: <https://brickschema.org/schema/Brick#>
+PREFIX csvw: <http://www.w3.org/ns/csvw#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX dcat: <http://www.w3.org/ns/dcat#>
+PREFIX dcmitype: <http://purl.org/dc/dcmitype/>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX dcam: <http://purl.org/dc/dcam/>
+PREFIX doap: <http://usefulinc.com/ns/doap#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX odrl: <http://www.w3.org/ns/odrl/2/>
+PREFIX org: <http://www.w3.org/ns/org#>
+PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX qb: <http://purl.org/linked-data/cube#>
+PREFIX schema: <https://schema.org/>
+PREFIX sh: <http://www.w3.org/ns/shacl#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX sosa: <http://www.w3.org/ns/sosa/>
+PREFIX ssn: <http://www.w3.org/ns/ssn/>
+PREFIX time: <http://www.w3.org/2006/time#>
+PREFIX vann: <http://purl.org/vocab/vann/>
+PREFIX void: <http://rdfs.org/ns/void#>
+PREFIX wgs: <https://www.w3.org/2003/01/geo/wgs84_pos#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX xml: <http://www.w3.org/XML/1998/namespace/>
+
+:CreativeWork
+{
+   rdf:type  [schema:CreativeWork]  ;                          # 100.0 %
+   rdf:type  [schema:ItemList]  ;                              # 100.0 %
+   rdf:type  [schema:ArchiveComponent]  ;                      # 100.0 %
+   schema:identifier  @:PropertyValue  {2};                    # 100.0 %
+   schema:isPartOf  IRI  ;                                     # 100.0 %
+   schema:genre  @:DefinedTerm  ;                              # 100.0 %
+   schema:name  xsd:string  +;                                 # 100.0 %
+            # 94.0 % obj: xsd:string. Cardinality: {2}
+   schema:creator  @:Person  ;                                 # 100.0 %
+   schema:description  xsd:string  ;                           # 100.0 %
+   schema:about  @:DefinedTerm  *;
+            # 99.0 % obj: @:DefinedTerm. Cardinality: +
+            # 43.0 % obj: @:DefinedTerm. Cardinality: {2}
+            # 39.0 % obj: @:DefinedTerm. Cardinality: {3}
+   schema:material  @:DefinedTerm  *;
+            # 96.0 % obj: @:DefinedTerm. Cardinality: +
+            # 42.0 % obj: @:DefinedTerm. Cardinality: {2}
+            # 26.0 % obj: @:DefinedTerm. Cardinality: {3}
+            # 23.0 % obj: @:DefinedTerm. Cardinality: {1}
+   schema:size  xsd:string  ?;
+            # 95.0 % obj: xsd:string. Cardinality: {1}
+   schema:dateCreated  xsd:string  ?;
+            # 95.0 % obj: xsd:string. Cardinality: {1}
+   schema:height  @:QuantitativeValue  *;
+            # 95.0 % obj: @:QuantitativeValue. Cardinality: +
+            # 94.0 % obj: @:QuantitativeValue. Cardinality: {1}
+   schema:width  @:QuantitativeValue  *;
+            # 80.0 % obj: @:QuantitativeValue. Cardinality: +
+            # 79.0 % obj: @:QuantitativeValue. Cardinality: {1}
+   schema:locationCreated  @:DefinedTerm  ?;
+            # 78.0 % obj: @:DefinedTerm. Cardinality: {1}
+   schema:depth  @:QuantitativeValue  ?;
+            # 74.0 % obj: @:QuantitativeValue. Cardinality: {1}
+   schema:associatedMedia  @:MediaObject  *
+            # 61.0 % obj: @:MediaObject. Cardinality: +
+            # 48.0 % obj: @:MediaObject. Cardinality: {1}
+            # 12.0 % obj: @:MediaObject. Cardinality: {2}
+}  
+
+
+:Person
+{
+   rdf:type  [schema:Person]  ;                                # 100.0 %
+   schema:name  xsd:string  ;                                  # 100.0 %
+   schema:hasOccupation  @:DefinedTerm  ?
+            # 12.0 % obj: @:DefinedTerm. Cardinality: {1}
+}  
+
+
+:DefinedTerm
+{
+   rdf:type  [schema:DefinedTerm]  ;                           # 100.0 %
+   schema:name  xsd:string  ;                                  # 100.0 %
+   rdf:type  [schema:Product]  ?;
+            # 42.857142857142854 % obj: schema:Product. Cardinality: {1}
+   schema:sameAs  IRI  ?
+            # 28.57142857142857 % obj: IRI. Cardinality: {1}
+}  
+
+
+:QuantitativeValue
+{
+   rdf:type  [schema:QuantitativeValue]  ;                     # 100.0 %
+   schema:unitText  xsd:string  ;                              # 100.0 %
+   schema:value  xsd:string  ;                                 # 100.0 %
+   schema:valueReference  xsd:string  ?
+            # 94.3609022556391 % obj: xsd:string. Cardinality: {1}
+}  
+
+
+:MediaObject
+{
+   rdf:type  [schema:MediaObject]  ;                           # 100.0 %
+   schema:contentUrl  xsd:anyURI  ;                            # 100.0 %
+   schema:encodesCreativeWork  @:CreativeWork  +               # 100.0 %
+            # 93.65079365079364 % obj: @:CreativeWork. Cardinality: {1}
+}  
+
+
+:PropertyValue
+{
+   rdf:type  [schema:PropertyValue]  ;                         # 100.0 %
+   schema:value  xsd:string  ;                                 # 100.0 %
+   schema:propertyID  xsd:anyURI  ;                            # 100.0 %
+   schema:description  xsd:string                              # 100.0 %
+}  
+
+
