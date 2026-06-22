@@ -30,7 +30,6 @@ DEFINED_TERM_FIELD_MAPPING = {
 # PropertyValue mapping: map field a: [b, c] to SDO.value [a], predicate [b], SDO.propertyID [c], SDO.description [d], 
 PROPERTY_VALUE_MAPPING = {
     oai_xpaths.OBJECT_NUMBER: [SDO.identifier, Literal('https://documentation.axiell.com/alm/en/index.html?ds_eiefxml.html', datatype=XSD.anyURI), 'AdlibXML object_number'],
-    oai_xpaths.PRIREF: [SDO.identifier, Literal('https://documentation.axiell.com/alm/en/index.html?ds_eiefxml.html', datatype=XSD.anyURI), 'AdlibXML priref'],
 }
 
 # directe attributen van het CreativeWork
@@ -77,7 +76,11 @@ TEMPORAL_INFO_MAPPING = {
     oai_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, SDO.deathDate],
 }
 
+# MediaObject, ImageObject
+# thumbnail (required)
+
+
 # mapping voor link naar afbeelding
 REPRODUCTION_MAPPING = {
-    oai_xpaths.REPRODUCTION_REFERENCE: [SDO.associatedMedia, SDO.MediaObject, SDO.contentUrl, SDO.encodesCreativeWork]
+    oai_xpaths.REPRODUCTION_REFERENCE: [SDO.associatedMedia, SDO.MediaObject, SDO.contentUrl, SDO.encodesCreativeWork, URIRef('https://rightsstatements.org/vocab/InC/1.0/')],
 }

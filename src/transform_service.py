@@ -57,6 +57,9 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
             target_graph.add((property_node, SDO.description, Literal(ref[2], datatype=XSD.string)))
             target_graph.add((record_object_node, ref[0], property_node))
 
+            #if key == xpath.OBJECT_NUMBER:
+            #    target_graph.add((record_object_node, SDO.sameAs, uritools.get_beeldbank_result_from_adlib_object_number(item_text)))
+
     # add defined terms
     process_defined_terms(target_graph, tree, record_object_node, mapping.DEFINED_TERM_FIELD_MAPPING, mapping.DEFINED_TERM_TYPES, ns_pfx, ns)
 
@@ -84,6 +87,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
             target_graph.add((r_ref_node, RDF.type, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1]))
             target_graph.add((record_object_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][0], r_ref_node))
             target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][3], record_object_node))
+            target_graph.add((r_ref_node, SDO.license, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][4]))
             target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][2], uritools.get_memorix_uri_from_reference(r_ref.text)))
 
     # Dimensions
