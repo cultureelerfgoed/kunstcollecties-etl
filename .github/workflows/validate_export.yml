@@ -17,7 +17,7 @@ on:
         description: 'Link to the shacl shape.'
         required: true
         type: string
-        default: 'https://github.com/netwerk-digitaal-erfgoed/schema-profile/raw/refs/heads/main/shacl.ttl'
+        default: 'https://github.com/cultureelerfgoed/collectie-nederland-schema-profile/raw/refs/heads/main/data/shacl.ttl'
     
 jobs:
   validate:
@@ -25,7 +25,7 @@ jobs:
     steps:
     - name: Download dataset export
       run: |
-        curl -H 'Authorization: Bearer ${{ secrets.LDV_API_TOKEN }}' -H 'Accept: application/json-ld' -X GET '${{ inputs.data-export-uri }}'  
+        wget --header 'Accept: application/json-ld' --header='Authorization: Bearer ${{ secrets.LDV_API_TOKEN }}' '${{ inputs.data-export-uri }}' -O 'kc.jsonld' 
     - name: Download shacl shape
       run: |
         wget '${{ inputs.shacl-shape-uri }}' -O 'shacl.ttl'
@@ -39,4 +39,4 @@ jobs:
         pip install pyshacl
     - name: validate 
       run: |
-        for file in *.jsonld; do pyshacl -s shacl.ttl -m -i rdfs -a -j -f human -df json-ld '$file'; done
+        pyshacl -s shacl.ttl -m -i rdfs -a -j -f human -df json-ld kc.jsonld
