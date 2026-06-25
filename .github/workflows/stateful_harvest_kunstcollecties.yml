@@ -1,4 +1,4 @@
-name: 'RCE Kunstcollecties ETL: stateful harvest' 
+name: 'RCE Kunstcollecties ETL: stateful harvest + transform' 
 
 env:
   BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
@@ -39,7 +39,7 @@ jobs:
         python -m pytest tests/
     - name: Harvest and transform 
       run: |
-        python src/harvest_service.py --chunks ${{ inputs.chunks }}
+        python src/harvest_service.py --chunks ${{ inputs.chunks }} --modified ${{ inputs.modification }}
         tar cvf - *.jsonld | gzip -9 - > ${{ env.ARTIFACT_PATH }}
       env:
         MODIFIED_ON_OR_AFTER: ${{ inputs.modification }}

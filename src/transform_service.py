@@ -57,6 +57,9 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
             target_graph.add((property_node, SDO.description, Literal(ref[2], datatype=XSD.string)))
             target_graph.add((record_object_node, ref[0], property_node))
 
+            if key == xpath.OBJECT_NUMBER:
+                target_graph.add((record_object_node, SDO.url, uritools.get_beeldbank_result_from_adlib_object_number(item_text)))
+
     # add defined terms
     process_defined_terms(target_graph, tree, record_object_node, mapping.DEFINED_TERM_FIELD_MAPPING, mapping.DEFINED_TERM_TYPES, ns_pfx, ns)
 
@@ -77,14 +80,18 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
     process_defined_terms(target_graph, tree, sdo_creator_node, mapping.CREATOR_DEFINED_TERM_MAPPING, mapping.CREATOR_DEFINED_TERM_TYPES, ns_pfx, ns)
 
     # Link to image of object at memorix based on reproduction reference
-    for index, r_ref in enumerate(findall_ns_wrapper(tree, xpath.REPRODUCTION_REFERENCE, ns_pfx, ns)):
+    mapping.MEDIAOBJECT_MAPPING[SDO.contentUrl]
+    for index, r_ref in enumerate(findall_ns_wrapper(tree, mapping.MEDIAOBJECT_MAPPING[SDO.contentUrl], ns_pfx, ns)):
         # check presence of reproduction reference and that the assigned rights permit publication 
         if r_ref.text and get_text_from_tree(tree, xpath.RIGHTS_ASSIGNED_VALUE, ns_pfx, ns) in config['RIGHTS_ASSIGNED_ALLOWLIST']:
-            r_ref_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], r_ref.text, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1])
-            target_graph.add((r_ref_node, RDF.type, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][1]))
-            target_graph.add((record_object_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][0], r_ref_node))
-            target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][3], record_object_node))
-            target_graph.add((r_ref_node, mapping.REPRODUCTION_MAPPING[xpath.REPRODUCTION_REFERENCE][2], uritools.get_memorix_uri_from_reference(r_ref.text)))
+            r_ref_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], r_ref.text, mapping.MEDIAOBJECT_MAPPING[RDF.type])
+            target_graph.add((r_ref_node, RDF.type, mapping.MEDIAOBJECT_MAPPING[RDF.type]))
+            target_graph.add((record_object_node, SDO.associatedMedia, r_ref_node))
+            target_graph.add((r_ref_node, SDO.encodesCreativeWork, record_object_node))
+            target_graph.add((r_ref_node, SDO.contentUrl, uritools.get_memorix_uri_from_reference(r_ref.text)))
+            target_graph.add((r_ref_node, SDO.license, mapping.MEDIAOBJECT_MAPPING[SDO.license]))
+            target_graph.add((r_ref_node, SDO.thumbnailUrl, uritools.get_memorix_uri_from_reference(r_ref.text, size='200x200')))
+
 
     # Dimensions
     qv_list = findall_ns_wrapper(tree, xpath.DIMENSION, ns_pfx, ns)

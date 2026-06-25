@@ -1,0 +1,15 @@
+{
+	"style": {
+		"Literal": {"classColor": "#ffffff", "classStroke": "#000000", "instanceColor": "#ffffff", "instanceStroke": "#000000"},
+		"Multi": {"classColor": "#cccccc", "classStroke": "#000000", "instanceColor": "#cccccc", "instanceStroke": "#000000"}
+	},
+	"onto": {
+		"schema": {
+			"core": "https://schema.org/version/latest/schemaorg-current-https.jsonld"
+		}
+
+	},
+	"prefix": {
+		"schema":"https://schema.org/"
+	}
+}

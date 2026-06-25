@@ -1,5 +1,5 @@
 from rdflib.namespace import SDO, XSD
-from rdflib import Literal, URIRef
+from rdflib import RDF, Literal, URIRef
 import oai_xpaths
 
 # Records zijn van de volgende types.
@@ -79,5 +79,11 @@ TEMPORAL_INFO_MAPPING = {
 
 # mapping voor link naar afbeelding
 REPRODUCTION_MAPPING = {
-    oai_xpaths.REPRODUCTION_REFERENCE: [SDO.associatedMedia, SDO.MediaObject, SDO.contentUrl, SDO.encodesCreativeWork]
+    oai_xpaths.REPRODUCTION_REFERENCE: [SDO.associatedMedia, SDO.MediaObject, SDO.contentUrl, SDO.encodesCreativeWork, URIRef('https://rightsstatements.org/page/InC/1.0/?language=nl')]
+}
+
+MEDIAOBJECT_MAPPING = {
+    RDF.type: SDO.MediaObject,
+    SDO.contentUrl: oai_xpaths.REPRODUCTION_REFERENCE,
+    SDO.license: Literal('https://rightsstatements.org/page/InC/1.0/?language=nl', datatype=XSD.anyURI),
 }

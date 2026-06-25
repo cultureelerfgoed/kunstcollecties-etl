@@ -2,7 +2,6 @@ name: 'RCE Kunstcollecties ETL: stateless harvest'
 
 env:
   BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
-  ARTIFACT_PATH: 'artifact.tar.gz'
   GRAPH_ID: 'rijkscollectie-latest-graph'
   DATASET_NAME: 'rijkscollectie-rce'
 
@@ -18,36 +17,31 @@ on:
         description: 'Harvested records must have been modified on or after supplied ISO-8601 date.'
         required: false
         type: string
-        default: '1970-01-01'     
+        default: '1970-01-01'    
     
 jobs:
-  etl:
+  harvest-transform-upload:
     runs-on: ubuntu-latest 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
         python-version: '3.x'
-    - name: Install dependencies
+    - name: Install dependencies for harvest/transform
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Harvest and transform 
       run: |
-        python src/harvest_service.py --chunks ${{ inputs.chunks }}
-        tar cvf - *.jsonld | gzip -9 - > ${{ env.ARTIFACT_PATH }}
+        python src/harvest_service.py --chunks ${{ inputs.chunks }} --modified ${{ inputs.modification }}
       env:
-        MODIFIED_ON_OR_AFTER: ${{ inputs.modification }}
-    - name: Compress
-      run: |
-        tar cvf - *.jsonld | gzip -9 - > ${{ env.ARTIFACT_PATH }}  
-    - name: Install dependencies
+        MODIFIED_ON_OR_AFTER: ${{ inputs.modification }}  
+    - name: Install dependencies for upload
       run: |
         wget 'https://static.triply.cc/cli/triplydb-linux'
         chmod +x triplydb-linux
-        tar -xzvf ${{ env.ARTIFACT_PATH }}
     - name: Push changes to TriplyDB API via CLI
       run: |
         for file in *.jsonld; do ./triplydb-linux import-from-file --dataset "${{ env.DATASET_NAME }}" --token "${{ secrets.LDV_API_TOKEN }}" --account "rce" --url "https://api.linkeddata.cultureelerfgoed.nl" --default-graph-name "https://linkeddata.cultureelerfgoed.nl/rce/${{ env.DATASET_NAME }}/graphs/${{ env.GRAPH_ID }}" --mode "merge" "$file"; done

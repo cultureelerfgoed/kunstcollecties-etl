@@ -30,10 +30,14 @@ def main():
     
     parser = argparse.ArgumentParser("Rijkscollectie-RCE ETL")
     parser.add_argument("--chunks", help="Number of records per json-ld file.", type=int)
+    parser.add_argument("--modified", help="Only harvest records after specified date.", type=str)
+
 
     args = parser.parse_args()
     if args.chunks:
         CHUNK_SIZE = args.chunks
+    if args.modified:
+        MOD = args.modified
     
     logger.info('Starting harvest of \n endpoint: %s \n enriching terms: %s \n pushing to: %s', config['SRC_URI'], config['ENRICH_TERMS'], config['BASE_URI']+config['COLLECTION_ID'])
     persistant_state = {
@@ -53,6 +57,7 @@ def main():
                         metadata_prefix='rs', 
                         set_spec=config['SRC_DB'],
                         max_items=CHUNK_SIZE,
+                        modified=MOD,
                         state=persistant_state)
             records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
 

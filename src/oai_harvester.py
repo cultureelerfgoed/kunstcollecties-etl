@@ -154,7 +154,7 @@ def oai_params_first_call(verb: str, metadata_prefix: Optional[str], set_spec: O
 # Harvest met rotatie, limiet, CSV/JSONL
 # -----------------------------
 def harvest(target_graph: Graph, base_url: str, metadata_prefix: Optional[str], set_spec: Optional[str],
-            sleep_between: float = 0.2, retries: int = 3, backoff: float = 1.5,
+            sleep_between: float = 0.2, retries: int = 3, backoff: float = 1.5, modified='1970-01-01', 
             max_items: Optional[int] = None, state: Optional[dict] = None, verb='ListRecords') -> Graph:
 
     headers = {
@@ -169,6 +169,8 @@ def harvest(target_graph: Graph, base_url: str, metadata_prefix: Optional[str], 
         params["metadataPrefix"] = metadata_prefix
     if set_spec:
         params["set"] = set_spec
+    if modified:
+        params["from"] = modified
 
     if not state:
         # State init
