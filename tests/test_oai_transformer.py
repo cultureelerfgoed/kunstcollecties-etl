@@ -37,7 +37,7 @@ def test_transform_valid():
         assert len(list(graph.objects(None, SDO.sameAs))) == 2
     else:
         assert len(list(graph.objects(None, SDO.sameAs))) == 1
-    assert len(list(graph.objects(None, SDO.propertyID))) == 2
+    assert len(list(graph.objects(None, SDO.propertyID))) == 1
     assert len(list(graph.objects(None, SDO.associatedMedia))) == 1
 
 
