@@ -1,9 +1,4 @@
-name: 'RCE Kunstcollecties ETL: stateful harvest' 
-
-env:
-  BASE_URI: 'https://linkeddata.cultureelerfgoed.nl/'
-  GRAPH_ID: 'rijkscollectie-latest-graph'
-  DATASET_NAME: 'rijkscollectie-rce'
+name: 'Local validation of data export against CN shacl' 
 
 on:
   workflow_dispatch: 
