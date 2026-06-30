@@ -22,7 +22,7 @@ jobs:
       run: |
         wget '${{ inputs.data-export-uri }}' --header 'Authorization: Bearer ${{ secrets.LDV_API_TOKEN }}' --local-encoding 'utf-8' -O 'kc.jsonld.gz' 
         file 'kc.jsonld.gz'
-        tar -xzvf 'kc.jsonld.gz'
+        gzip -d 'kc.jsonld.gz'
     - name: Download shacl shape
       run: |
         wget '${{ inputs.shacl-shape-uri }}' -O 'shacl.ttl'
