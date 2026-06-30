@@ -20,7 +20,7 @@ jobs:
     steps:
     - name: Download dataset export
       run: |
-        wget --header 'Accept: application/json-ld' --header='Authorization: Bearer ${{ secrets.LDV_API_TOKEN }}' '${{ inputs.data-export-uri }}' -O 'kc.jsonld' 
+        wget '${{ inputs.data-export-uri }}' --header 'Accept: application/json-ld' --header 'Authorization: Bearer ${{ secrets.LDV_API_TOKEN }}'  -O 'kc.jsonld' 
     - name: Download shacl shape
       run: |
         wget '${{ inputs.shacl-shape-uri }}' -O 'shacl.ttl'
