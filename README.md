@@ -24,7 +24,7 @@ Deze ETL bestaat uit de volgende onderdelen:
 - Limieten Github Actions en Triply API.
 
 ## Running tests
-``` python -m pytest -s tests/test_adlib_transformer.py ```
+``` python -m pytest -s tests ```
 
 ## Running pipeline
 ``` python src/harvest_service.py --chunks '6000' ```
