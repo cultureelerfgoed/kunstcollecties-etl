@@ -37,6 +37,6 @@ def test_harvest():
                         set_spec=config['SRC_DB'],
                         state=persistant_state,
                         max_items=100)
-    records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
+    records = len(list(rgraph.subjects(RDF.type, SDO.CreativeWork)))
     assert records == 100
     
