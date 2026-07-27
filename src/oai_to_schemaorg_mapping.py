@@ -5,8 +5,6 @@ import oai_xpaths
 # Records zijn van de volgende types.
 RECORD_OBJECT_TYPES = [
     SDO.CreativeWork,
-    SDO.ArchiveComponent,
-    SDO.ItemList,
 ]
 
 ### Velden in DEFINED_TERM_TYPES kunnen verrijkingen bevatten. ###
@@ -22,7 +20,7 @@ DEFINED_TERM_TYPES = {
 DEFINED_TERM_FIELD_MAPPING = {
     oai_xpaths.MATERIAL_ITEM: [SDO.material, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
     oai_xpaths.OBJECT_CATEGORY: [SDO.genre, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
-    oai_xpaths.ASSOCIATION_SUBJECT: [SDO.about, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
+    oai_xpaths.ASSOCIATION_SUBJECT: [SDO.keywords, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
     oai_xpaths.PRODUCTION_PLACE: [SDO.locationCreated, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
 } 
 
@@ -32,27 +30,12 @@ PROPERTY_VALUE_MAPPING = {
     oai_xpaths.OBJECT_NUMBER: [SDO.identifier, Literal('https://documentation.axiell.com/alm/en/index.html?ds_eiefxml.html', datatype=XSD.anyURI), 'AdlibXML object_number'],
 }
 
-# directe attributen van het CreativeWork
-BASIC_MAPPING = {
-    oai_xpaths.DESCRIPTION_TEXT: [SDO.description, Literal, XSD.string],
-    oai_xpaths.OBJECT_NAME_ITEM: [SDO.name, Literal, XSD.string],
-    oai_xpaths.DIMENSION_FREE: [SDO.size, Literal, XSD.string],
-    oai_xpaths.PRODUCTION_DATE_END: [SDO.dateCreated, Literal, XSD.string],
-    oai_xpaths.TITLE_TEXT: [SDO.name, Literal, XSD.string],
-}
-
 # mapping voor attributen mbt rechten
 RIGHTS_MAPPING = {
     oai_xpaths.RIGHTS_HOLDER: SDO.copyrightHolder,
 }
 
-# mapping voor attributen mbt maker, creator is altijd een persoon
-CREATOR_MAPPING = {
-    oai_xpaths.CREATOR_NAME: [SDO.name, Literal, XSD.string], 
-    oai_xpaths.RKDARTISTS: [SDO.sameAs, URIRef, None], 
-    oai_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, Literal, XSD.string],
-    oai_xpaths.CREATOR_DATE_OF_BIRTH: [SDO.birthDate, Literal, XSD.string],
-}
+
 
 CREATOR_DEFINED_TERM_TYPES = {
     oai_xpaths.CREATOR_ROLE: [SDO.Occupation, SDO.DefinedTerm],
@@ -76,10 +59,6 @@ TEMPORAL_INFO_MAPPING = {
     oai_xpaths.CREATOR_DATE_OF_DEATH: [SDO.deathDate, SDO.deathDate],
 }
 
-# MediaObject, ImageObject
-# thumbnail (required)
-
-
 # mapping voor link naar afbeelding
 REPRODUCTION_MAPPING = {
     oai_xpaths.REPRODUCTION_REFERENCE: [SDO.associatedMedia, SDO.MediaObject, SDO.contentUrl, SDO.encodesCreativeWork, URIRef('https://rightsstatements.org/page/InC/1.0/?language=nl')]
@@ -89,4 +68,21 @@ MEDIAOBJECT_MAPPING = {
     RDF.type: SDO.MediaObject,
     SDO.contentUrl: oai_xpaths.REPRODUCTION_REFERENCE,
     SDO.license: Literal('https://rightsstatements.org/page/InC/1.0/?language=nl', datatype=XSD.anyURI),
+}
+
+CREATIVEWORK_MAPPING = {
+    SDO.name: oai_xpaths.TITLE_TEXT,
+    SDO.publisher: oai_xpaths.INSTITUTION_NAME,
+    SDO.alternateName: oai_xpaths.OBJECT_NAME_ITEM,
+    SDO.temporal: oai_xpaths.PRODUCTION_DATE_END,
+    SDO.license: oai_xpaths.RIGHTS_TYPE,
+    SDO.description: oai_xpaths.DESCRIPTION_TEXT,
+}
+
+# mapping voor attributen mbt maker, creator is altijd een persoon
+CREATOR_MAPPING = {
+    SDO.name: [oai_xpaths.CREATOR_NAME, Literal, XSD.string],
+    SDO.sameAs: [oai_xpaths.RKDARTISTS, URIRef, XSD.anyURI],
+    SDO.deathDate: [oai_xpaths.CREATOR_DATE_OF_DEATH, Literal, XSD.string],
+    SDO.birthDate: [oai_xpaths.CREATOR_DATE_OF_BIRTH, Literal, XSD.string], 
 }

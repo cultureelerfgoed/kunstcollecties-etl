@@ -242,7 +242,7 @@ def main():
     rgraph = harvest(rgraph, 
                         base_url=config['SRC_URI'], 
                         verb='ListRecords', 
-                        metadata_prefix='rs', 
+                        metadata_prefix='kc_rs', 
                         set_spec=config['SRC_DB'],
                         state=persistant_state,
                         max_items=10)

@@ -5,7 +5,6 @@ from typing import Optional, Any
 import xml.etree.ElementTree as ET
 import uuid
 import os
-from urllib.parse import urlparse
 import yaml
 from rdflib import Graph, Literal, Node, URIRef
 from rdflib.namespace import RDF, SDO, XSD
@@ -41,10 +40,10 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
         target_graph.add((record_object_node, RDF.type, rtype))
 
     # first degree attributes
-    for key, ref in mapping.BASIC_MAPPING.items():
-        item_text = get_text_from_tree(tree, key, ns_pfx, ns)
+    for key, ref in mapping.CREATIVEWORK_MAPPING.items():
+        item_text = get_text_from_tree(tree, ref, ns_pfx, ns)
         if item_text:
-            target_graph.add((record_object_node, ref[0], ref[1](item_text, datatype=ref[2])))
+            target_graph.add((record_object_node, key, Literal(item_text, lang='nl')))
 
     # add property value attributes
     for key, ref in mapping.PROPERTY_VALUE_MAPPING.items():
@@ -68,14 +67,14 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
     target_graph.add((sdo_creator_node, RDF.type, SDO.Person))
     target_graph.add((record_object_node, SDO.creator, sdo_creator_node))
     for key, ref in mapping.CREATOR_MAPPING.items():
-        item_text = get_text_from_tree(tree, key, ns_pfx, ns)
+        item_text = get_text_from_tree(tree, ref[0], ns_pfx, ns)
         if item_text:
             if ref[1] == URIRef and uritools.is_valid_uri(item_text):
-                target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
+                target_graph.add((sdo_creator_node, key, ref[1](item_text.strip())))
             elif ref[1] == Literal and ref[2]:
-                target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip(), datatype=ref[2])))
+                target_graph.add((sdo_creator_node, key, ref[1](item_text.strip(), datatype=ref[2])))
             elif ref[1] == Literal:
-                target_graph.add((sdo_creator_node, ref[0], ref[1](item_text.strip())))
+                target_graph.add((sdo_creator_node, key, ref[1](item_text.strip())))
     
     process_defined_terms(target_graph, tree, sdo_creator_node, mapping.CREATOR_DEFINED_TERM_MAPPING, mapping.CREATOR_DEFINED_TERM_TYPES, ns_pfx, ns)
 
@@ -112,18 +111,8 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
             
             #d_type = next(dimension.iterfind(tags.DIMENSION_TYPE))
             d_type = get_text_from_tree(qv_dimension, xpath.DIMENSION_TYPE, ns_pfx, ns)
-            if d_type == 'hoogte':
-                target_graph.add((qv_node, SDO.valueReference, Literal('hoogte', lang='nl')))
-                target_graph.add((record_object_node, SDO.height, qv_node))
-            elif d_type == 'breedte':
-                target_graph.add((qv_node, SDO.valueReference, Literal('breedte', lang='nl')))
-                target_graph.add((record_object_node, SDO.width, qv_node))
-            elif d_type == 'diepte':
-                target_graph.add((qv_node, SDO.valueReference, Literal('diepte', lang='nl')))
-                target_graph.add((record_object_node, SDO.depth, qv_node))
-            elif d_type == 'gewicht':
-                target_graph.add((qv_node, SDO.valueReference, Literal('gewicht', lang='nl')))
-                target_graph.add((record_object_node, SDO.weight, qv_node))
+            target_graph.add((qv_node, SDO.valueReference, Literal(d_type, lang='nl')))
+            target_graph.add((record_object_node, SDO.size, qv_node))
         except StopIteration:
             logger.error('Invalid Dimension: %s', ET.tostring(qv_dimension))
             target_graph.remove((qv_node, None, None))
