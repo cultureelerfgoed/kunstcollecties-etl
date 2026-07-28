@@ -55,7 +55,7 @@ def main():
                         set_spec=config['SRC_DB'],
                         max_items=CHUNK_SIZE,
                         state=persistant_state)
-            records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
+            records = len(list(rgraph.subjects(RDF.type, SDO.CreativeWork)))
 
         except TypeError as e: # Exception as e:
             logger.error('Harvesting failed: %s', str(traceback.format_exception(e)))
