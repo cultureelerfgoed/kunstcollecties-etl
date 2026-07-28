@@ -3,8 +3,8 @@ import traceback
 import logging
 import datetime
 import argparse
-from rdflib import Graph
 import yaml
+from rdflib import Graph
 from rdflib.namespace import SDO, RDF
 import oai_harvester as harvester
 
@@ -30,14 +30,11 @@ def main():
     
     parser = argparse.ArgumentParser("Rijkscollectie-RCE ETL")
     parser.add_argument("--chunks", help="Number of records per json-ld file.", type=int)
-    parser.add_argument("--modified", help="Only harvest records after specified date.", type=str)
-
 
     args = parser.parse_args()
     if args.chunks:
         CHUNK_SIZE = args.chunks
-    if args.modified:
-        MOD = args.modified
+
     
     logger.info('Starting harvest of \n endpoint: %s \n enriching terms: %s \n pushing to: %s', config['SRC_URI'], config['ENRICH_TERMS'], config['BASE_URI']+config['COLLECTION_ID'])
     persistant_state = {
@@ -57,20 +54,19 @@ def main():
                         metadata_prefix='rs', 
                         set_spec=config['SRC_DB'],
                         max_items=CHUNK_SIZE,
-                        modified=MOD,
                         state=persistant_state)
             records = len(list(rgraph.subjects(RDF.type, SDO.ArchiveComponent)))
 
         except TypeError as e: # Exception as e:
             logger.error('Harvesting failed: %s', str(traceback.format_exception(e)))
         
-        if records == 0 or persistant_state.get('resumptionToken').strip() == '':
+        if records == 0 or persistant_state.get('resumptionToken', '').strip() == '':
             logger.info('Reached end of records from source API, total retrieved records: %i, exiting..', persistant_state.get("total"))
             break
         else:
             b = datetime.datetime.now().replace(microsecond=0)
             dt = b-a
-            total = int(persistant_state.get("total"))
+            total = int(persistant_state.get('total', 0))
             dt_avg = (dt/records) / datetime.timedelta(milliseconds=1)
             logger.info('Finished chunk after %s, got %i records, avg time spent per record %s ms, total records harvested: %i.', str(dt), records, str(dt_avg), total)
             logger.info('rt: %s', persistant_state.get('resumptionToken'))

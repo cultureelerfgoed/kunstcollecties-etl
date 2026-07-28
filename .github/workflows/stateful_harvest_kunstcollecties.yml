@@ -13,12 +13,7 @@ on:
         description: 'Number of records per upload.'
         required: true
         type: number
-        default: 8000
-      modification:
-        description: 'Harvested records must have been modified on or after supplied ISO-8601 date.'
-        required: false
-        type: string
-        default: '1970-01-01'     
+        default: 7000
     
 jobs:
   harvest-and-transform:
@@ -39,10 +34,8 @@ jobs:
         python -m pytest tests/
     - name: Harvest and transform 
       run: |
-        python src/harvest_service.py --chunks ${{ inputs.chunks }} --modified ${{ inputs.modification }}
+        python src/harvest_service.py --chunks ${{ inputs.chunks }} 
         tar cvf - *.jsonld | gzip -9 - > ${{ env.ARTIFACT_PATH }}
-      env:
-        MODIFIED_ON_OR_AFTER: ${{ inputs.modification }}
     - name: Compress
       run: |
         tar cvf - *.jsonld | gzip -9 - > ${{ env.ARTIFACT_PATH }}  

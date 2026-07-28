@@ -154,7 +154,7 @@ def oai_params_first_call(verb: str, metadata_prefix: Optional[str], set_spec: O
 # Harvest met rotatie, limiet, CSV/JSONL
 # -----------------------------
 def harvest(target_graph: Graph, base_url: str, metadata_prefix: Optional[str], set_spec: Optional[str],
-            sleep_between: float = 0.2, retries: int = 3, backoff: float = 1.5, modified='1970-01-01', 
+            sleep_between: float = 0.2, retries: int = 3, backoff: float = 1.5, 
             max_items: Optional[int] = None, state: Optional[dict] = None, verb='ListRecords') -> Graph:
 
     headers = {
@@ -169,8 +169,8 @@ def harvest(target_graph: Graph, base_url: str, metadata_prefix: Optional[str], 
         params["metadataPrefix"] = metadata_prefix
     if set_spec:
         params["set"] = set_spec
-    if modified:
-        params["from"] = modified
+    #if modified:
+    #    params["from"] = modified
 
     if not state:
         # State init
@@ -181,15 +181,15 @@ def harvest(target_graph: Graph, base_url: str, metadata_prefix: Optional[str], 
     
     try:
         while True:
-            len_diff = len(list(target_graph.subjects(RDF.type, SDO.ArchiveComponent))) - st_items
+            len_diff = len(list(target_graph.subjects(RDF.type, SDO.CreativeWork))) - st_items
             if max_items is not None and len_diff >= max_items:
                 logger.debug(f"Max-items bereikt ({max_items}). Stoppen.")
                 state.update({
-                    "total": int(state.get("total")) + len_diff,
+                    'total': int(state.get('total', 0)) + len_diff,
                 })
                 break
 
-            if state.get("resumptionToken") and state.get("resumptionToken").strip() != '':
+            if state.get("resumptionToken") and state.get('resumptionToken', '').strip() != '':
                 params["resumptionToken"] = state.get("resumptionToken")
 
             url = build_url(base_url, params)
@@ -201,18 +201,18 @@ def harvest(target_graph: Graph, base_url: str, metadata_prefix: Optional[str], 
             if verb == "ListRecords":
                 elements = root.findall(".//oai:metadata/oai:record", NS)
  
-            for element in elements:
-                try:
-                    transform_service.parse_tree_to_graph(target_graph, element, mapping, xpath, 'ns0', 'http://www.openarchives.org/OAI/2.0/')
-                except (AssertionError, TypeError, Exception) as te:
-                    logger.warning('Error during transformation: %s', str(traceback.format_exception(te)))
+                for element in elements:
+                    try:
+                        transform_service.parse_tree_to_graph(target_graph, element, mapping, xpath, 'ns0', 'http://www.openarchives.org/OAI/2.0/')
+                    except (AssertionError, TypeError, Exception) as te:
+                        logger.warning('Error during transformation: %s', str(traceback.format_exception(te)))
 
             # Volgende pagina
             rt_el = root.find(".//oai:resumptionToken", NS)
             # maybe get oai:completeListSize?
             rt = rt_el.text.strip() if rt_el is not None and rt_el.text else ""
             
-            logger.debug(f"{len(list(target_graph.subjects(RDF.type, SDO.ArchiveComponent)))} items in graph. ResumptionToken {'aanwezig' if rt else 'ontbreekt'}.")
+            logger.debug(f"{len(list(target_graph.subjects(RDF.type, SDO.CreativeWork)))} items in graph. ResumptionToken {'aanwezig' if rt else 'ontbreekt'}.")
 
             state.update({
                 "resumptionToken": rt,
