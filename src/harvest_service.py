@@ -51,7 +51,7 @@ def main():
             rgraph = harvester.harvest(rgraph, 
                         base_url=config['SRC_URI'], 
                         verb='ListRecords', 
-                        metadata_prefix='rs', 
+                        metadata_prefix='kc_rs', 
                         set_spec=config['SRC_DB'],
                         max_items=CHUNK_SIZE,
                         state=persistant_state)
