@@ -22,7 +22,7 @@ def test_transform_valid():
         '<Source><source.number>https://rkd.nl/artists/64175</source.number></Source>' \
         '</creator>' \
         '</Production>' \
-        '<Rights><rights.assigned><value lang="neutral">PICTORIGHT</value><value lang="0">No, rights assigned to Pictoright</value>' \
+        '<Rights><rights.assigned><value lang="neutral">YES</value><value lang="0">No, rights assigned to Pictoright</value>' \
         '<value lang="1">Nee, maar toestemming voor gebruik Pictoright (afbeelding zichtbaar) </value></rights.assigned>' \
         '<rights.holder>Gijzen, W.F.</rights.holder></Rights>' \
         '<Reproduction><reproduction.reference>37d77ebb-3c6c-d691-884e-75cdf50125f7</reproduction.reference></Reproduction>' \
