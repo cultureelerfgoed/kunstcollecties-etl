@@ -20,7 +20,7 @@ DEFINED_TERM_TYPES = {
 DEFINED_TERM_FIELD_MAPPING = {
     oai_xpaths.MATERIAL_ITEM: [SDO.material, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
     oai_xpaths.OBJECT_CATEGORY: [SDO.genre, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
-    oai_xpaths.ASSOCIATION_SUBJECT: [SDO.keywords, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
+    oai_xpaths.ASSOCIATION_SUBJECT: [SDO.additionalType, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
     oai_xpaths.PRODUCTION_PLACE: [SDO.locationCreated, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
 } 
 
@@ -72,11 +72,12 @@ MEDIAOBJECT_MAPPING = {
 
 CREATIVEWORK_MAPPING = {
     SDO.name: oai_xpaths.TITLE_TEXT,
-    SDO.publisher: oai_xpaths.INSTITUTION_NAME,
+    SDO.sdPublisher: oai_xpaths.INSTITUTION_NAME,
     SDO.alternateName: oai_xpaths.OBJECT_NAME_ITEM,
     SDO.temporal: oai_xpaths.PRODUCTION_DATE_END,
     SDO.license: oai_xpaths.RIGHTS_TYPE,
     SDO.description: oai_xpaths.DESCRIPTION_TEXT,
+    SDO.size: oai_xpaths.DIMENSION_FREE,
 }
 
 # mapping voor attributen mbt maker, creator is altijd een persoon
