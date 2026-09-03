@@ -61,7 +61,8 @@ jobs:
         tar -xzvf ${{ env.ARTIFACT_PATH }}
     - name: Push changes to TriplyDB API via CLI
       run: |
-        for file in *.jsonld; do ./triplydb-linux import-from-file --dataset "${{ env.DATASET_NAME }}" --token "${{ secrets.LDV_API_TOKEN }}" --account "rce" --url "https://api.linkeddata.cultureelerfgoed.nl" --default-graph-name "https://linkeddata.cultureelerfgoed.nl/rce/${{ env.DATASET_NAME }}/graphs/${{ env.GRAPH_ID }}" --mode "merge" "$file"; done
+        d=$(date +%s)
+        for file in *.jsonld; do ./triplydb-linux import-from-file --dataset "${{ env.DATASET_NAME }}" --token "${{ secrets.LDV_API_TOKEN }}" --account "rce" --url "https://api.linkeddata.cultureelerfgoed.nl" --default-graph-name "https://linkeddata.cultureelerfgoed.nl/rce/${{ env.DATASET_NAME }}/graphs/rijkscollectie_$d" --mode "merge" "$file"; done
     - name: Print triply error response
       if: ${{ failure() }}
       run: |
