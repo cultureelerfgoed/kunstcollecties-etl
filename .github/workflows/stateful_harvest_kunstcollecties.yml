@@ -14,6 +14,11 @@ on:
         required: true
         type: number
         default: 7000
+      testmode:
+        description: 'Only run first chunk for testing purposes.'
+        required: true
+        type: boolean
+        default: false
     
 jobs:
   harvest-and-transform:
@@ -25,11 +30,10 @@ jobs:
       with:
         path: ${{ env.CACHE_PATH }}
         key: ${{ env.DATASET_NAME }}-data-cache-${{ github.run_attempt }}
-    - name: print cache status
-      run: ls -R
     - name: Clear data/output cache
       run: |
-        rm -f ${{ env.CACHE_PATH }}/*
+        rm -f ${{ env.CACHE_PATH }}
+        mkdir ${{ env.CACHE_PATH }}
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
@@ -43,7 +47,9 @@ jobs:
         python -m pytest tests/
     - name: Harvest and transform 
       run: |
-        python src/harvest_service.py --chunks ${{ inputs.chunks }} 
+        python src/harvest_service.py --chunks ${{ inputs.chunks }} --testmode ${{ inputs.testmode }}
+    - name: print cache status
+      run: ls -R
     
   push-to-triply:
     runs-on: ubuntu-latest
