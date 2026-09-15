@@ -83,3 +83,7 @@ classDef Multi_URI fill:#cccccc,stroke:#000000,color:;
 7(["schema:QuantitativeValue"]) -->|schema:value| 36["xsd:string"]:::Literal
 4(["schema:CreativeWork"]) -->|schema:name| 37["xsd:string"]:::Literal
 ```
+
+# Tools
+
+In de directory ``` tools ``` staan twee python files, namelijk ``` tools > criteria.py ``` en ``` tools > generate-datashape.py ```. ``` tools > criteria.py ``` kan gebruikt worden om een implementatiemodel te genereren op basis van getransformeerde data. ``` tools > generate-datashape.py ``` kan gebruikt worden om een .shex datashape te genereren op basis van getransformeerde data. 
