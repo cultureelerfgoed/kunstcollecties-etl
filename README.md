@@ -2,7 +2,29 @@
 
 ```mermaid
 flowchart LR;
-    Adlib(Adlib API) --> ETL(Github Action) --> LDV(Linked Data Voorziening)
+    Axiell(Axiell Collections) --> ETL(Github Action) --> LDV(Linked Data Voorziening)
+```
+```mermaid
+sequenceDiagram;
+    participant Axiell Collections 
+    participant ETL
+    participant Linked Data Voorziening
+    participant NDE Datasetregister
+    participant Collectie Nederland
+
+    ETL->>Axiell Collections:ophalen brondata
+    Axiell Collections-->>ETL:
+    ETL-->>ETL:transformatie naar Linked Data
+    ETL->>ETL:validatie 
+    ETL->>Linked Data Voorziening:publicatie
+    ETL->>Linked Data Voorziening:sync
+    loop Na publicatie in datacatalog
+        NDE Datasetregister->>Linked Data Voorziening: Ophalen datacatalog RCE
+        Linked Data Voorziening-->>NDE Datasetregister:
+        Collectie Nederland->>NDE Datasetregister: Ophalen CN.nl datasets 
+        NDE Datasetregister-->>Collectie Nederland: 
+        Collectie Nederland->>Linked Data Voorziening:
+    end
 ```
 
 ## Inhoud van deze repository
