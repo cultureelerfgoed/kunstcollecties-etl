@@ -1,9 +1,24 @@
 # Kunstcollecties ETL
 
-```mermaid
-flowchart LR;
-    Axiell(Axiell Collections) --> ETL(Github Action) --> LDV(Linked Data Voorziening)
-```
+## Inhoud van deze repository
+Deze ETL bestaat uit de volgende onderdelen:
+- de workflows in ``` .github/workflows/ ```
+- tests in ``` tests/ ```
+- configuratie in ``` config/ ```
+- code in ``` src/ ``` die bestaat uit:
+    - een mapping in ``` src/oai_to_schemaorg_mapping.py ```
+    - een lijst van AdlibXML xpaths in ``` src/oai_xpaths_py ``` of ``` src/adlib_xpaths_py ```
+    - een lijst AdlibXML elementen in ``` src/oai_tags.py ```
+    - transformatie logica in ``` src/transform_service.py ```
+    - harvestering logica in ``` src/harvest_service.py ``` en ``` src/oai_harvester.py ``` of ``` src/adlib_harvester.py ```
+
+## Context
+- Dataset op de Linked Data Voorziening [rijkscollectie-rce](https://linkeddata.cultureelerfgoed.nl/rce/rijkscollectie-rce)
+- Mapping op basis van CN model, wat een minder stricte versie van het NDE schema.org applicatieprofiel is.  
+- Rechten voor afbeeldingen op Memorix basis van AdlibXML
+- Limieten Github Actions en Triply API.
+
+## Sequentiediagram
 ```mermaid
 sequenceDiagram;
     participant Axiell Collections 
@@ -27,31 +42,13 @@ sequenceDiagram;
     end
 ```
 
-## Inhoud van deze repository
-Deze ETL bestaat uit de volgende onderdelen:
-- de workflows in ``` .github/workflows/ ```
-- tests in ``` tests/ ```
-- configuratie in ``` config/ ```
-- code in ``` src/ ``` die bestaat uit:
-    - een mapping in ``` src/adlibxml_to_schemaorg_mapping.py ```
-    - een lijst van AdlibXML xpaths in ``` src/adlib_xpaths_py ```
-    - een lijst AdlibXML elementen in ``` src/adlib_tags.py ```
-    - transformatie logica in ``` src/adlib_transformer.py ```
-    - harvestering logica in ``` src/harvest_service.py ``` en ``` src/adlib_harvester.py ```
+## Uitvoeren tests
+``` ./run-test-windows.sh ``` of ``` ./run-test-linux.sh ```
 
-## Context
-- Dataset op de Linked Data Voorziening [rijkscollectie-rce](https://linkeddata.cultureelerfgoed.nl/rce/rijkscollectie-rce)
-- Mapping op basis van CN model, wat een minder stricte versie van het NDE schema.org applicatieprofiel is.  
-- Rechten voor afbeeldingen op Memorix basis van AdlibXML
-- Limieten Github Actions en Triply API.
+## Lokaal draaien pipeline
+``` ./run-windows.sh ``` of ``` ./run-linux.sh ```
 
-## Running tests
-``` python -m pytest -s tests ```
-
-## Running pipeline
-``` python src/harvest_service.py --chunks '6000' ```
-
-## Current implementation model
+## Implementatiemodel
 ```mermaid
 ---
   config:
