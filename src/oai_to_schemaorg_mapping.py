@@ -22,6 +22,7 @@ DEFINED_TERM_FIELD_MAPPING = {
     oai_xpaths.OBJECT_CATEGORY: [SDO.genre, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
     oai_xpaths.ASSOCIATION_SUBJECT: [SDO.additionalType, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
     oai_xpaths.PRODUCTION_PLACE: [SDO.locationCreated, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
+    oai_xpaths.CREATOR_BIRTHPLACE: [SDO.birthPlace, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
 } 
 
 # mapping voor velden die als property-value toegevoegd worden 
@@ -34,8 +35,6 @@ PROPERTY_VALUE_MAPPING = {
 RIGHTS_MAPPING = {
     oai_xpaths.RIGHTS_HOLDER: SDO.copyrightHolder,
 }
-
-
 
 CREATOR_DEFINED_TERM_TYPES = {
     oai_xpaths.CREATOR_ROLE: [SDO.Occupation, SDO.DefinedTerm],
@@ -80,10 +79,10 @@ CREATIVEWORK_MAPPING = {
     SDO.size: oai_xpaths.DIMENSION_FREE,
 }
 
-# mapping voor attributen mbt maker, creator is altijd een persoon
+# mapping voor attributen mbt maker
 CREATOR_MAPPING = {
     SDO.name: [oai_xpaths.CREATOR_NAME, Literal, XSD.string],
     SDO.sameAs: [oai_xpaths.RKDARTISTS, URIRef, XSD.anyURI],
-    SDO.deathDate: [oai_xpaths.CREATOR_DATE_OF_DEATH, Literal, XSD.string],
-    SDO.birthDate: [oai_xpaths.CREATOR_DATE_OF_BIRTH, Literal, XSD.string], 
+    SDO.deathDate: [oai_xpaths.CREATOR_DATE_OF_DEATH, Literal, XSD.date],
+    SDO.birthDate: [oai_xpaths.CREATOR_DATE_OF_BIRTH, Literal, XSD.date],
 }
