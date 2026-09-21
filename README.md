@@ -22,18 +22,18 @@ Deze ETL bestaat uit de volgende onderdelen:
 ```mermaid
 sequenceDiagram;
     participant Axiell Collections 
-    participant ETL
+    participant Github Action
     participant Linked Data Voorziening
     participant NDE Datasetregister
     participant Collectie Nederland
     
     loop Transformatieproces
-        ETL->>Axiell Collections:ophalen brondata
-        Axiell Collections-->>ETL:
-        ETL->>ETL:transformatie naar Linked Data
-        ETL->>ETL:validatie 
-        ETL->>Linked Data Voorziening:publicatie
-        ETL->>Linked Data Voorziening:sync
+        Github Action->>Axiell Collections:ophalen brondata
+        Axiell Collections-->>Github Action:
+        Github Action->>Github Action:transformatie naar Linked Data
+        Github Action->>Github Action:validatie 
+        Github Action->>Linked Data Voorziening:publicatie
+        Github Action->>Linked Data Voorziening:sync
     end
     loop Aggregatieproces
         NDE Datasetregister->>Linked Data Voorziening: Ophalen datacatalog RCE
