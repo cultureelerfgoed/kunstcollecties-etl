@@ -29,7 +29,7 @@ sequenceDiagram;
 
     ETL->>Axiell Collections:ophalen brondata
     Axiell Collections-->>ETL:
-    ETL-->>ETL:transformatie naar Linked Data
+    ETL->>ETL:transformatie naar Linked Data
     ETL->>ETL:validatie 
     ETL->>Linked Data Voorziening:publicatie
     ETL->>Linked Data Voorziening:sync
@@ -39,6 +39,7 @@ sequenceDiagram;
         Collectie Nederland->>NDE Datasetregister: Ophalen CN.nl datasets 
         NDE Datasetregister-->>Collectie Nederland: 
         Collectie Nederland->>Linked Data Voorziening:
+        Linked Data Voorziening-->>Collectie Nederland:
     end
 ```
 
