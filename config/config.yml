@@ -16,7 +16,7 @@ SRC_DB: 'ruben_s'
 SRC_API_LIMIT: 100
 
 ### Toegestane waardes om link naar memorix te tonen ###
-RIGHTS_ASSIGNED_ALLOWLIST: ['YES']
+RIGHTS_ASSIGNED_ALLOWLIST: ['NOPMB', 'PICTORIGHT', 'YES']
 
 ### Organisatie ###
 ORG_URI: 'https://www.cultureelerfgoed.nl/'
