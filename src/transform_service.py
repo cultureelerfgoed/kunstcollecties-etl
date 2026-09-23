@@ -154,10 +154,12 @@ def process_defined_terms(target_graph: Graph, tree: (ET.ElementTree | ET.Elemen
     # add defined terms
     for key, ref in field_mapping.items():
         for dt_item in findall_ns_wrapper(tree, key, ns_pfx, ns):
-            if ref[1]: # get term name from sub-element 
+            
+            if ref[1]:
                 dt_name = get_text_from_tree(dt_item, ref[1], ns_pfx, ns)
-            else: # get term name element content
+            else:
                 dt_name = get_text_from_tree(tree, key, ns_pfx, ns)
+
             if dt_name:
                 dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], dt_name,  type_mapping[key][0]))
                 

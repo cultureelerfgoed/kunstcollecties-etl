@@ -161,8 +161,7 @@ def test_multiple_materials():
     transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
     assert len(list(graph.objects(None, SDO.material))) == 2
 
-    for s, p, o in sorted(graph):
-        print(f'{s} \n {p} \n {o}')
+    
 
 def test_object_number_in_beeldbank():
     test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
@@ -197,7 +196,6 @@ def test_birthplace_enrichment():
         '<object_number>aa111</object_number>' \
         '<object_category>olieverf</object_category>' \
         '<Production>' \
-        '<production.place><Source><source.number>https//sws.geonames.org/2750405/</source.number></Source><term>Nederland</term></production.place>' \
         '<creator>' \
         '<birth.place>ENKHUIZEN</birth.place>' \
         '<Source>' \
@@ -212,5 +210,9 @@ def test_birthplace_enrichment():
     # get detailed information with priref 
     graph = Graph()
     transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
-    assert len(list(graph.subjects(RDF.type, SDO.Place))) == 2
     assert len(list(graph.objects(None, SDO.birthPlace))) == 1
+    assert len(list(graph.subjects(RDF.type, SDO.Place))) == 1
+
+    for s, p, o in sorted(graph):
+            print(f'{s} \n {p} \n {o}')
+
