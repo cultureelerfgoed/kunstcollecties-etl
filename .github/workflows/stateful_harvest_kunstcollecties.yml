@@ -26,14 +26,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v7
-    - uses: actions/cache@v6
-      with:
-        path: ${{ env.CACHE_PATH }}
-        key: ${{ env.DATASET_NAME }}-data-cache-${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
-    - name: Clear data/output cache
-      run: |
-        rm -rf ${{ env.CACHE_PATH }}
-        mkdir ${{ env.CACHE_PATH }}
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
@@ -48,6 +40,10 @@ jobs:
     - name: Harvest and transform 
       run: |
         python src/harvest_service.py --chunks ${{ inputs.chunks }} --testmode ${{ inputs.testmode }}
+    - uses: actions/cache@v6
+      with:
+        path: ${{ env.CACHE_PATH }}
+        key: ${{ env.DATASET_NAME }}-data-cache-${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
     - name: print cache status
       run: ls -R ${{ env.CACHE_PATH }}
     
