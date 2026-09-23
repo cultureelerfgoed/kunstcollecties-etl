@@ -37,13 +37,13 @@ jobs:
     - name: Run functional tests
       run: |
         python -m pytest tests/
-    - name: Harvest and transform 
-      run: |
-        python src/harvest_service.py --chunks ${{ inputs.chunks }} --testmode ${{ inputs.testmode }}
     - uses: actions/cache@v6
       with:
         path: ${{ env.CACHE_PATH }}
-        key: ${{ env.DATASET_NAME }}-data-cache-${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+        key: ${{ env.DATASET_NAME }}-data-cache-${{ github.run_id }}
+    - name: Harvest and transform 
+      run: |
+        python src/harvest_service.py --chunks ${{ inputs.chunks }} --testmode ${{ inputs.testmode }}
     - name: print cache status
       run: ls -R ${{ env.CACHE_PATH }}
     
@@ -54,7 +54,7 @@ jobs:
     - uses: actions/cache@v6
       with:
         path: ${{ env.CACHE_PATH }}
-        key: ${{ env.DATASET_NAME }}-data-cache-${{ github.run_attempt }}
+        key: ${{ env.DATASET_NAME }}-data-cache-${{ github.run_id }}
     - name: Install dependencies
       run: |
         wget 'https://static.triply.cc/cli/triplydb-linux'
@@ -67,6 +67,10 @@ jobs:
       if: ${{ failure() }}
       run: |
         cat .triplydb-js.err
+    - name: Clear cache
+      if: ${{ !failure() }}
+      run: |
+        rm ${{ env.CACHE_PATH }}*.jsonld
 
   sync-triply:
     runs-on: ubuntu-latest
