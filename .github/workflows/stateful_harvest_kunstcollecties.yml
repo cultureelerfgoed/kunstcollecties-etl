@@ -32,7 +32,7 @@ jobs:
         key: ${{ env.DATASET_NAME }}-data-cache-${{ github.run_attempt }}
     - name: Clear data/output cache
       run: |
-        rm -f ${{ env.CACHE_PATH }}
+        rm -rf ${{ env.CACHE_PATH }}
         mkdir ${{ env.CACHE_PATH }}
     - name: Set up Python
       uses: actions/setup-python@v6
@@ -49,7 +49,7 @@ jobs:
       run: |
         python src/harvest_service.py --chunks ${{ inputs.chunks }} --testmode ${{ inputs.testmode }}
     - name: print cache status
-      run: ls -R
+      run: ls -R ${{ env.CACHE_PATH }}
     
   push-to-triply:
     runs-on: ubuntu-latest
