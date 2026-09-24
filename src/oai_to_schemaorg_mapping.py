@@ -13,7 +13,7 @@ DEFINED_TERM_TYPES = {
     oai_xpaths.MATERIAL_ITEM: [SDO.Product, SDO.DefinedTerm],
     oai_xpaths.OBJECT_CATEGORY: [SDO.DefinedTerm],
     oai_xpaths.ASSOCIATION_SUBJECT: [SDO.DefinedTerm],
-    oai_xpaths.PRODUCTION_PLACE: [SDO.Place, SDO.DefinedTerm]
+    oai_xpaths.PRODUCTION_PLACE: [SDO.Place, SDO.DefinedTerm],
 }
 # in DEFINED_TERM_FIELD_MAPPING is opgenomen wat de verhouding is met het CreativeWork object, dus welk predicaat gebruikt wordt
 # daarna komt de term en daarna de uri
@@ -22,7 +22,6 @@ DEFINED_TERM_FIELD_MAPPING = {
     oai_xpaths.OBJECT_CATEGORY: [SDO.genre, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
     oai_xpaths.ASSOCIATION_SUBJECT: [SDO.additionalType, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
     oai_xpaths.PRODUCTION_PLACE: [SDO.locationCreated, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
-    oai_xpaths.CREATOR_BIRTHPLACE: [SDO.birthPlace, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
 } 
 
 # mapping voor velden die als property-value toegevoegd worden 
@@ -38,10 +37,12 @@ RIGHTS_MAPPING = {
 
 CREATOR_DEFINED_TERM_TYPES = {
     oai_xpaths.CREATOR_ROLE: [SDO.Occupation, SDO.DefinedTerm],
+    oai_xpaths.CREATOR_BIRTHPLACE: [SDO.Place, SDO.DefinedTerm],
 }
 
 CREATOR_DEFINED_TERM_MAPPING = {
     oai_xpaths.CREATOR_ROLE: [SDO.hasOccupation, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
+    oai_xpaths.CREATOR_BIRTHPLACE: [SDO.birthPlace, None, oai_xpaths.TERM_URI],
 }
 
 # mapping voor simpele afmetingen
@@ -83,6 +84,6 @@ CREATIVEWORK_MAPPING = {
 CREATOR_MAPPING = {
     SDO.name: [oai_xpaths.CREATOR_NAME, Literal, XSD.string],
     SDO.sameAs: [oai_xpaths.RKDARTISTS, URIRef, XSD.anyURI],
-    SDO.deathDate: [oai_xpaths.CREATOR_DATE_OF_DEATH, Literal, XSD.date],
-    SDO.birthDate: [oai_xpaths.CREATOR_DATE_OF_BIRTH, Literal, XSD.date],
+    SDO.deathDate: [oai_xpaths.CREATOR_DATE_OF_DEATH, Literal, XSD.string],
+    SDO.birthDate: [oai_xpaths.CREATOR_DATE_OF_BIRTH, Literal, XSD.string],
 }

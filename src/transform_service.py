@@ -66,6 +66,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
     sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], priref, SDO.Person)
     target_graph.add((sdo_creator_node, RDF.type, SDO.Person))
     target_graph.add((record_object_node, SDO.creator, sdo_creator_node))
+    
     for key, ref in mapping.CREATOR_MAPPING.items():
         item_text = get_text_from_tree(tree, ref[0], ns_pfx, ns)
         if item_text:
@@ -153,7 +154,12 @@ def process_defined_terms(target_graph: Graph, tree: (ET.ElementTree | ET.Elemen
     # add defined terms
     for key, ref in field_mapping.items():
         for dt_item in findall_ns_wrapper(tree, key, ns_pfx, ns):
-            dt_name = get_text_from_tree(dt_item, ref[1], ns_pfx, ns)
+            
+            if ref[1]:
+                dt_name = get_text_from_tree(dt_item, ref[1], ns_pfx, ns)
+            else:
+                dt_name = get_text_from_tree(tree, key, ns_pfx, ns)
+
             if dt_name:
                 dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], dt_name,  type_mapping[key][0]))
                 

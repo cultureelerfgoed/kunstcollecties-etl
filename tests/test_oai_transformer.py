@@ -116,7 +116,7 @@ def test_quantitative_values():
     transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
     assert len(list(graph.subjects(RDF.type, SDO.QuantitativeValue))) == 2
 
-def test_place_enrichment():
+def test_productionplace_enrichment():
     test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
         '<priref>98500</priref>' \
         '<dimension.free>hoogte: 26.5 cm breedte: 40 cm</dimension.free>' \
@@ -135,6 +135,7 @@ def test_place_enrichment():
     transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
     assert len(list(graph.subjects(RDF.type, SDO.Place))) == 1
     assert len(list(graph.objects(None, SDO.sameAs))) == 1
+    assert len(list(graph.objects(None, SDO.locationCreated))) == 1
 
 def test_multiple_materials():
     test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
@@ -160,8 +161,7 @@ def test_multiple_materials():
     transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
     assert len(list(graph.objects(None, SDO.material))) == 2
 
-    for s, p, o in sorted(graph):
-        print(f'{s} \n {p} \n {o}')
+    
 
 def test_object_number_in_beeldbank():
     test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
@@ -188,3 +188,31 @@ def test_object_number_in_beeldbank():
     url = next(graph.objects(None, SDO.url))
     assert 'beeldbank' in url
     assert 'aa111' in url 
+
+def test_birthplace_enrichment():
+    test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
+        '<priref>98500</priref>' \
+        '<dimension.free>hoogte: 26.5 cm breedte: 40 cm</dimension.free>' \
+        '<object_number>aa111</object_number>' \
+        '<object_category>olieverf</object_category>' \
+        '<Production>' \
+        '<creator>' \
+        '<birth.place>ENKHUIZEN</birth.place>' \
+        '<Source>' \
+        '<source.number>https://rkd.nl/artists/64175</source.number>' \
+        '</Source>' \
+        '<name>Pompe, Gerrit</name>' \
+        '<priref>15576</priref>' \
+        '</creator>' \
+        '</Production>' \
+        '</record>' 
+    root = ET.fromstring(test_xml)
+    # get detailed information with priref 
+    graph = Graph()
+    transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
+    assert len(list(graph.objects(None, SDO.birthPlace))) == 1
+    assert len(list(graph.subjects(RDF.type, SDO.Place))) == 1
+
+    for s, p, o in sorted(graph):
+            print(f'{s} \n {p} \n {o}')
+

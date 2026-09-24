@@ -33,13 +33,13 @@ def main():
     
     parser = argparse.ArgumentParser("Rijkscollectie-RCE ETL")
     parser.add_argument("--chunks", help="Number of records per json-ld file.", type=int)
-    parser.add_argument("--testmode", help="Only run first chunk for testing.", type=bool)
+    parser.add_argument("--testmode", help="Only run first chunk for testing.", type=str)
 
     args = parser.parse_args()
     if args.chunks:
         CHUNK_SIZE = args.chunks
     if args.testmode:
-        TESTMODE = args.testmode
+        TESTMODE = (str(args.testmode).lower() == 'true')
 
     logger.info('Starting harvest of \n endpoint: %s \n enriching terms: %s \n pushing to: %s \n testmode: %s \n', config['SRC_URI'], config['ENRICH_TERMS'], config['BASE_URI']+config['COLLECTION_ID'], str(TESTMODE))
     persistant_state = {
