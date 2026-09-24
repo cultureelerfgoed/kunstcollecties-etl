@@ -10,6 +10,8 @@ from rdflib import Graph, Literal, Node, URIRef
 from rdflib.namespace import RDF, SDO, XSD
 import uritools
 
+import oai_xpaths
+
 CONFIG_PATH = os.getenv('CONFIG_PATH', 'config/config.yml')
 MODIFIED_ON_OR_AFTER = datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970-01-01'), '%Y-%m-%d')
 
@@ -63,7 +65,8 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
     process_defined_terms(target_graph, tree, record_object_node, mapping.DEFINED_TERM_FIELD_MAPPING, mapping.DEFINED_TERM_TYPES, ns_pfx, ns)
 
     # add creator, creators are always persons in version 0.1 of datamodel
-    sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], priref, SDO.Person)
+    creator_priref = get_text_from_tree(tree, oai_xpaths.CREATOR_PRIREF, ns_pfx, ns) or str(uuid.uuid4())
+    sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], creator_priref, SDO.Person)
     target_graph.add((sdo_creator_node, RDF.type, SDO.Person))
     target_graph.add((record_object_node, SDO.creator, sdo_creator_node))
     

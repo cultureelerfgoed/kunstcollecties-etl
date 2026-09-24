@@ -43,6 +43,7 @@ OBJECT_NAME = './/Object_name'
 OBJECT_NAME_ITEM = './/Object_name/object_name/term'
 
 CREATOR = './/Production/creator'
+CREATOR_PRIREF = './/Production/creator/priref'
 CREATOR_NAME = './/Production/creator/name'
 CREATOR_BIRTHPLACE = './/Production/creator/birth.place'
 CREATOR_BIRTHPLACE_URI = './/Production/creator/name'

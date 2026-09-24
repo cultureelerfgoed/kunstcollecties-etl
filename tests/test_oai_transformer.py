@@ -213,6 +213,52 @@ def test_birthplace_enrichment():
     assert len(list(graph.objects(None, SDO.birthPlace))) == 1
     assert len(list(graph.subjects(RDF.type, SDO.Place))) == 1
 
+def test_person_uri_dereferenced():
+    test_xml_1 = '<record priref="99" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
+            '<priref>99</priref>' \
+            '<dimension.free>hoogte: 26.5 cm breedte: 40 cm</dimension.free>' \
+            '<object_number>aa111</object_number>' \
+            '<object_category>olieverf</object_category>' \
+            '<Production>' \
+            '<creator>' \
+            '<birth.place>ENKHUIZEN</birth.place>' \
+            '<Source>' \
+            '<source.number>https://rkd.nl/artists/64175</source.number>' \
+            '</Source>' \
+            '<name>Pompe, Gerrit</name>' \
+            '<priref>15576</priref>' \
+            '</creator>' \
+            '</Production>' \
+            '</record>' 
+    test_xml_2 = '<record priref="101" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
+            '<priref>101</priref>' \
+            '<dimension.free>hoogte: 26.5 cm breedte: 40 cm</dimension.free>' \
+            '<object_number>aa222</object_number>' \
+            '<object_category>olieverf</object_category>' \
+            '<Production>' \
+            '<creator>' \
+            '<birth.place>ENKHUIZEN</birth.place>' \
+            '<Source>' \
+            '<source.number>https://rkd.nl/artists/64175</source.number>' \
+            '</Source>' \
+            '<name>Pompe, Gerrit</name>' \
+            '<priref>15576</priref>' \
+            '</creator>' \
+            '</Production>' \
+            '</record>'
+
+    root = ET.fromstring(test_xml_1)
+    # get detailed information with priref 
+    graph = Graph()
+    transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
+    assert len(list(graph.subjects(RDF.type, SDO.CreativeWork))) == 1
+    assert len(list(graph.subjects(RDF.type, SDO.Person))) == 1
+
+    root = ET.fromstring(test_xml_2)
+    transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
+    assert len(list(graph.subjects(RDF.type, SDO.CreativeWork))) == 2
+    assert len(list(graph.subjects(RDF.type, SDO.Person))) == 1
+    
     for s, p, o in sorted(graph):
             print(f'{s} \n {p} \n {o}')
-
+    
