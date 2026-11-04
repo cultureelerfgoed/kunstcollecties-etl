@@ -4,8 +4,9 @@ import logging
 import datetime
 import argparse
 import yaml
-from rdflib import Graph
-from rdflib.namespace import SDO, RDF
+from rdflib import Graph, URIRef, Literal
+from rdflib.namespace import SDO, RDF, DC
+import uritools
 import oai_harvester as harvester
 
 def main():
@@ -54,7 +55,20 @@ def main():
 
     for index in h_range:
         records = 0
+        dataset_node = URIRef('https://linkeddata.cultureelerfgoed.nl/rce/rijkscollectie-rce/')
         rgraph = Graph()
+        rgraph.add((dataset_node, RDF.type, SDO.Dataset))
+        rgraph.add((dataset_node, SDO.url, URIRef('https://kennis.cultureelerfgoed.nl/index.php/Dataset/103')))
+        rgraph.add((dataset_node, DC.title, Literal('Rijkscollectie RCE', lang='nl')))
+        org_graph = uritools.get_organization(config['ORG_URI'], 
+                                                config['ORG_NAME'], 
+                                                config['ORG_SAME_AS'],
+                                                config['ORG_CONTACT_NAME'],
+                                                config['ORG_CONTACT_EMAIL'],
+                                                config['ORG_ISIL'],
+                                                config['ORG_ALTNAME'])
+        rgraph = rgraph + org_graph
+        rgraph.add((dataset_node, SDO.publisher, URIRef(config['ORG_URI'])))
         a = datetime.datetime.now().replace(microsecond=0)
 
         try:

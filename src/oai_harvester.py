@@ -1,7 +1,5 @@
 import logging
 import traceback
-from rdflib import Graph
-import yaml
 import re
 import time
 import gzip
@@ -11,10 +9,14 @@ import urllib.parse
 import urllib.error
 import xml.etree.ElementTree as ET
 from typing import Optional, Tuple
+import yaml
+from rdflib.namespace import SDO, RDF, DC
+from rdflib import Graph, URIRef, Literal
+import uritools
 import transform_service
 import oai_to_schemaorg_mapping as mapping
-from rdflib.namespace import SDO, RDF
 import oai_xpaths as xpath
+
 
 logger = logging.getLogger(__name__)
 config = yaml.safe_load(open('config/config.yml', encoding='utf-8'))
@@ -233,7 +235,21 @@ def main():
         level=logging.INFO,
         datefmt='%Y-%m-%d %H:%M:%S')
     print('Starting harvest test.')
+    dataset_node = URIRef('https://linkeddata.cultureelerfgoed.nl/rce/rijkscollectie-rce/')
     rgraph = Graph()
+    rgraph.add((dataset_node, RDF.type, SDO.Dataset))
+    rgraph.add((dataset_node, SDO.url, URIRef('https://kennis.cultureelerfgoed.nl/index.php/Dataset/103')))
+    rgraph.add((dataset_node, DC.title, Literal('Rijkscollectie RCE', lang='nl')))
+    org_graph = uritools.get_organization(config['ORG_URI'], 
+                                            config['ORG_NAME'], 
+                                            config['ORG_SAME_AS'],
+                                            config['ORG_CONTACT_NAME'],
+                                            config['ORG_CONTACT_EMAIL'],
+                                            config['ORG_ISIL'],
+                                            config['ORG_ALTNAME'])
+    target_graph = target_graph + org_graph
+    target_graph.add((dataset_node, SDO.publisher, URIRef(config['ORG_URI'])))
+
     persistant_state = {
                 "total": 0,
                 "resumptionToken": "",

@@ -7,7 +7,7 @@ import uuid
 import os
 import yaml
 from rdflib import Graph, Literal, Node, URIRef
-from rdflib.namespace import RDF, SDO, XSD
+from rdflib.namespace import RDF, SDO, XSD, DC
 import uritools
 
 import oai_xpaths
@@ -34,7 +34,8 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
         return target_graph
     
     # adding required field isPartOf dataset reference
-    dataset_node = uritools.get_object_uri(config['BASE_URI'], 'rce/datacatalog', 'https://kennis.cultureelerfgoed.nl/index.php/Dataset/103', SDO.Dataset)
+    # dataset_node = uritools.get_object_uri(config['BASE_URI'], 'rce/datacatalog', 'https://kennis.cultureelerfgoed.nl/index.php/Dataset/103', SDO.Dataset)
+    dataset_node = URIRef('https://linkeddata.cultureelerfgoed.nl/rce/rijkscollectie-rce/')
     target_graph.add((record_object_node, SDO.isPartOf, dataset_node))
 
     # add record types from mapping

@@ -75,7 +75,7 @@ CREATIVEWORK_MAPPING = {
     SDO.sdPublisher: oai_xpaths.INSTITUTION_NAME,
     SDO.alternateName: oai_xpaths.OBJECT_NAME_ITEM,
     SDO.temporal: oai_xpaths.PRODUCTION_DATE_END,
-    SDO.license: oai_xpaths.RIGHTS_TYPE,
+    SDO.copyrightNotice: oai_xpaths.RIGHTS_TYPE,
     SDO.description: oai_xpaths.DESCRIPTION_TEXT,
     SDO.size: oai_xpaths.DIMENSION_FREE,
 }

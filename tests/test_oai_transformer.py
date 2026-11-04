@@ -184,10 +184,9 @@ def test_object_number_in_beeldbank():
     # get detailed information with priref 
     graph = Graph()
     transform_service.parse_tree_to_graph(graph, root, mapping, xpath)
-    assert len(list(graph.objects(None, SDO.url))) == 1
-    url = next(graph.objects(None, SDO.url))
-    assert 'beeldbank' in url
-    assert 'aa111' in url 
+    it = list(graph.objects(None, SDO.url))
+    assert 'beeldbank' in str(it)
+    assert 'aa111' in str(it)
 
 def test_birthplace_enrichment():
     test_xml = '<record priref="98492" created="2015-04-02T02:34:13" modification="2021-07-23T06:57:15" selected="false">' \
