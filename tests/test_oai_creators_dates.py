@@ -128,3 +128,39 @@ def test_technique_becomes_additional_type_with_uri():
     assert len(types) == 2
     assert {str(graph.value(t, SDO.name)) for t in types} == {'kopergravure', 'bekleed'}
     assert [str(o) for o in graph.objects(None, SDO.sameAs)] == ['http://vocab.getty.edu/aat/300053149']
+
+
+def test_urls_are_iris_and_safe():
+    from rdflib import URIRef
+    graph = _graph('<record priref="1"><priref>1</priref><object_number>DV412 A-D</object_number>'
+                   '<Rights><rights.assigned><value>YES</value></rights.assigned></Rights>'
+                   '<Reproduction><reproduction.reference>37d77ebb-3c6c-d691-884e-75cdf50125f7</reproduction.reference></Reproduction></record>')
+    for predicate in (SDO.url, SDO.contentUrl, SDO.thumbnailUrl, SDO.license):
+        values = list(graph.objects(None, predicate))
+        assert values, predicate
+        assert all(isinstance(v, URIRef) for v in values), predicate
+    assert ' ' not in str(list(graph.objects(None, SDO.url))[0])
+    assert 'DV412%20A-D' in str(list(graph.objects(None, SDO.url))[0])
+
+
+def test_term_names_are_language_tagged():
+    graph = _graph('<record priref="1"><priref>1</priref>'
+                   '<Material><material><term>papier</term></material></Material>'
+                   '<Technique><technique><term>ets</term></technique></Technique>'
+                   '<Production><production.place><term>Delft</term></production.place><creator><name>X</name><birth.place>Gouda</birth.place></creator>'
+                   '<creator.role><term>graveur</term></creator.role></Production>'
+                   '<Thema_wat><theme.subject.what>tabak</theme.subject.what></Thema_wat></record>')
+    terms = [s for s in graph.subjects(RDF.type, SDO.DefinedTerm)]
+    assert len(terms) >= 6
+    for term in terms:
+        names = list(graph.objects(term, SDO.name))
+        assert len(names) == 1 and names[0].language == 'nl', term
+
+
+def test_person_names_are_language_tagged():
+    graph = _graph(TWO_MAKERS.replace('</record>', '<Rights><rights.holder>Houder, H.</rights.holder></Rights></record>'))
+    persons = list(graph.subjects(RDF.type, SDO.Person))
+    assert len(persons) == 3
+    for person in persons:
+        names = list(graph.objects(person, SDO.name))
+        assert len(names) == 1 and names[0].language == 'nl'

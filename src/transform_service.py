@@ -3,7 +3,7 @@ import logging
 import re
 from typing import Optional, Any
 import xml.etree.ElementTree as ET
-import uuid
+from urllib.parse import quote
 import os
 import yaml
 from rdflib import Graph, Literal, Node, URIRef
@@ -17,6 +17,11 @@ MODIFIED_ON_OR_AFTER = datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970
 
 config = yaml.safe_load(open(CONFIG_PATH))
 logger = logging.getLogger(__name__)
+
+def _iri(value) -> URIRef:
+    """Het CN-profiel (SHACL) wil voor url, contentUrl, thumbnailUrl en license een IRI, geen xsd:anyURI-tekst."""
+    return URIRef(str(value))
+
 
 ISO_DATE = re.compile(r'^-?\d{4}(-\d{2}(-\d{2})?)?$')
 
@@ -95,7 +100,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
             target_graph.add((record_object_node, ref[0], property_node))
 
             if key == xpath.OBJECT_NUMBER:
-                target_graph.add((record_object_node, SDO.url, uritools.get_beeldbank_result_from_adlib_object_number(item_text)))
+                target_graph.add((record_object_node, SDO.url, _iri(uritools.get_beeldbank_result_from_adlib_object_number(quote(item_text.strip(), safe='-._~')))))
 
     # add defined terms
     process_defined_terms(target_graph, tree, record_object_node, mapping.DEFINED_TERM_FIELD_MAPPING, mapping.DEFINED_TERM_TYPES, ns_pfx, ns)
@@ -136,6 +141,9 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
             if item_text and item_text.strip():
                 if ref[1] == URIRef and uritools.is_valid_uri(item_text.strip()):
                     target_graph.add((sdo_creator_node, key, ref[1](item_text.strip())))
+                elif key == SDO.name:
+                    # NDE 1.10 / CN-SHACL: de naam van een persoon is een taalgebonden string
+                    target_graph.add((sdo_creator_node, key, Literal(item_text.strip(), lang='nl')))
                 elif ref[1] == Literal and ref[2]:
                     target_graph.add((sdo_creator_node, key, ref[1](item_text.strip(), datatype=ref[2])))
                 elif ref[1] == Literal:
@@ -150,7 +158,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
             if about_name:
                 about_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], about_name, SDO.DefinedTerm)
                 target_graph.add((about_node, RDF.type, SDO.DefinedTerm))
-                target_graph.add((about_node, SDO.name, Literal(about_name, datatype=XSD.string)))
+                target_graph.add((about_node, SDO.name, Literal(about_name, lang='nl')))
                 target_graph.add((record_object_node, SDO.about, about_node))
 
     # overige nummers (inventarisnummer, plaatsingsnummer, ...) -> identifier (PropertyValue, zoals object_number)
@@ -174,9 +182,9 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
                 target_graph.add((r_ref_node, RDF.type, mapping.MEDIAOBJECT_MAPPING[RDF.type]))
                 target_graph.add((record_object_node, SDO.associatedMedia, r_ref_node))
                 target_graph.add((r_ref_node, SDO.encodesCreativeWork, record_object_node))
-                target_graph.add((r_ref_node, SDO.contentUrl, uritools.get_memorix_uri_from_reference(r_ref.text)))
+                target_graph.add((r_ref_node, SDO.contentUrl, _iri(uritools.get_memorix_uri_from_reference(quote(r_ref.text.strip(), safe='-._~')))))
                 target_graph.add((r_ref_node, SDO.license, mapping.MEDIAOBJECT_MAPPING[SDO.license]))
-                target_graph.add((r_ref_node, SDO.thumbnailUrl, uritools.get_memorix_uri_from_reference(r_ref.text, size='200x200')))
+                target_graph.add((r_ref_node, SDO.thumbnailUrl, _iri(uritools.get_memorix_uri_from_reference(quote(r_ref.text.strip(), safe='-._~'), size='200x200'))))
 
 
     # Dimensions
@@ -210,7 +218,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
         # gedeeld per naam (zoals termen), maar los van makers die op priref worden geadresseerd
         sdo_rholder_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], f'rightsholder/{rholder_text.strip()}', SDO.Person)
         target_graph.add((sdo_rholder_node, RDF.type, SDO.Person))
-        target_graph.add((sdo_rholder_node, SDO.name, Literal(rholder_text, datatype=XSD.string)))
+        target_graph.add((sdo_rholder_node, SDO.name, Literal(rholder_text.strip(), lang='nl')))
         target_graph.add((record_object_node, SDO.copyrightHolder, sdo_rholder_node))
 
     return target_graph
@@ -244,7 +252,8 @@ def process_defined_terms(target_graph: Graph, tree: (ET.ElementTree | ET.Elemen
                 dt_url = URIRef(uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], dt_name,  type_mapping[key][0]))
                 
                 target_graph.add((target_node, ref[0], dt_url))
-                target_graph.add((dt_url, SDO.name, Literal(dt_name, datatype=XSD.string)))
+                # CN/NDE: de naam van een term is een taalgebonden string (SHACL: Violation zonder taalcode)
+                target_graph.add((dt_url, SDO.name, Literal(dt_name, lang='nl')))
                 for item_type in type_mapping[key]:
                     target_graph.add((dt_url, RDF.type, item_type))
 

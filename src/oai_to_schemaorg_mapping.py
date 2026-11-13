@@ -71,7 +71,7 @@ REPRODUCTION_MAPPING = {
 MEDIAOBJECT_MAPPING = {
     RDF.type: SDO.MediaObject,
     SDO.contentUrl: oai_xpaths.REPRODUCTION_REFERENCE,
-    SDO.license: Literal('https://rightsstatements.org/page/InC/1.0/?language=nl', datatype=XSD.anyURI),
+    SDO.license: URIRef('https://rightsstatements.org/page/InC/1.0/?language=nl'),
 }
 
 CREATIVEWORK_MAPPING = {
