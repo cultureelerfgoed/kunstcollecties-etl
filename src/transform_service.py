@@ -105,6 +105,20 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
     # add defined terms
     process_defined_terms(target_graph, tree, record_object_node, mapping.DEFINED_TERM_FIELD_MAPPING, mapping.DEFINED_TERM_TYPES, ns_pfx, ns)
 
+    # verwijzingen naar elders: digitale bron (sameAs), restitutieadvies (subjectOf)
+    for link_path, link_predicate in mapping.LINK_MAPPING.items():
+        for link_el in findall_ns_wrapper(tree, link_path, ns_pfx, ns):
+            link_value = (link_el.text or '').strip()
+            if link_value.startswith(('http://', 'https://')) and uritools.is_valid_uri(link_value):
+                target_graph.add((record_object_node, link_predicate, _iri(link_value)))
+
+    # gerelateerde objecten: het objectnummer wordt het beeldbank-adres van dat object (zoals schema:url bij een werk)
+    for related_el in findall_ns_wrapper(tree, xpath.RELATED_OBJECT_REFERENCE, ns_pfx, ns):
+        related_nr = (related_el.text or '').strip()
+        if related_nr:
+            related_url = uritools.get_beeldbank_result_from_adlib_object_number(quote(related_nr, safe='-._~'))
+            target_graph.add((record_object_node, mapping.RELATED_OBJECT_PREDICATE, _iri(related_url)))
+
     # datering: dateCreated (ISO-datum) en/of temporal (ook perioden), uit begin- en einddatum
     dates = creation_dates(get_text_from_tree(tree, xpath.PRODUCTION_DATE_START, ns_pfx, ns),
                            get_text_from_tree(tree, xpath.PRODUCTION_DATE_END, ns_pfx, ns))

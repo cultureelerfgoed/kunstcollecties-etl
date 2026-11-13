@@ -114,6 +114,15 @@ TECHNIQUE_ITEM = './/Technique/technique'
 TECHNIQUE = './/Technique/technique/term'
 TECHNIQUE_URI = './/Technique/technique/Source/source.number'
 
+# Objectnaam als term (met Getty AAT-URI); OBJECT_NAME_ITEM hierboven is alleen de tekst voor schema:alternateName
+OBJECT_NAME_TERM_ITEM = './/Object_name/object_name'
+
+# Verwijzingen (URI's) naar elders: digitale bron (RKDimages, Collectie Nederland, handle), advies Restitutiecommissie,
+# en gerelateerde objecten (objectnummer, wordt een beeldbank-adres)
+DIGITAL_REFERENCE = './/Digital_reference/digital_reference'
+RESTITUTION_REFERENCE = './/Restitution_status/restitution.status.reference'
+RELATED_OBJECT_REFERENCE = './/Related_object/related_object.reference'
+
 OBJECT_NUMBER = './/object_number'
 
 PART = './/part'

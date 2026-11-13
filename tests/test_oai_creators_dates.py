@@ -164,3 +164,32 @@ def test_person_names_are_language_tagged():
     for person in persons:
         names = list(graph.objects(person, SDO.name))
         assert len(names) == 1 and names[0].language == 'nl'
+
+
+def test_object_name_becomes_additional_type_with_aat_uri():
+    graph = _graph('<record priref="1"><priref>1</priref>'
+                   '<Object_name><object_name><term>schilderij</term><Source><source.number>http://vocab.getty.edu/aat/300033618</source.number></Source></object_name></Object_name>'
+                   '<Object_name><object_name><term>doek</term></object_name></Object_name></record>')
+    types = list(graph.objects(None, SDO.additionalType))
+    assert {str(graph.value(t, SDO.name)) for t in types} == {'schilderij', 'doek'}
+    assert [str(o) for o in graph.objects(None, SDO.sameAs)] == ['http://vocab.getty.edu/aat/300033618']
+    assert [str(o) for o in graph.objects(None, SDO.alternateName)] != []   # de tekst blijft in alternateName
+
+
+def test_references_to_elsewhere_are_iris():
+    from rdflib import URIRef
+    graph = _graph('<record priref="1"><priref>1</priref>'
+                   '<Digital_reference><digital_reference>https://rkd.nl/explore/images/7870</digital_reference><digital_reference.description>RKDimages</digital_reference.description></Digital_reference>'
+                   '<Restitution_status><restitution.status.reference>https://www.restitutiecommissie.nl/adviezen/advies_149.html</restitution.status.reference></Restitution_status>'
+                   '<Related_object><related_object.reference>AA946-A-B</related_object.reference></Related_object>'
+                   '<Related_object><related_object.reference>L 12</related_object.reference></Related_object></record>')
+    assert list(graph.objects(None, SDO.sameAs)) == [URIRef('https://rkd.nl/explore/images/7870')]
+    assert list(graph.objects(None, SDO.subjectOf)) == [URIRef('https://www.restitutiecommissie.nl/adviezen/advies_149.html')]
+    related = [str(o) for o in graph.objects(None, SDO.isRelatedTo)]
+    assert len(related) == 2 and all(r.startswith('http') and ' ' not in r for r in related)
+    assert any('AA946-A-B' in r for r in related) and any('L%2012' in r for r in related)
+
+
+def test_reference_that_is_not_a_uri_is_skipped():
+    graph = _graph('<record priref="1"><priref>1</priref><Digital_reference><digital_reference>geen adres</digital_reference></Digital_reference></record>')
+    assert list(graph.objects(None, SDO.sameAs)) == []

@@ -15,6 +15,7 @@ DEFINED_TERM_TYPES = {
     oai_xpaths.ASSOCIATION_SUBJECT: [SDO.DefinedTerm],
     oai_xpaths.PRODUCTION_PLACE: [SDO.Place, SDO.DefinedTerm],
     oai_xpaths.TECHNIQUE_ITEM: [SDO.DefinedTerm],
+    oai_xpaths.OBJECT_NAME_TERM_ITEM: [SDO.DefinedTerm],
 }
 # in DEFINED_TERM_FIELD_MAPPING is opgenomen wat de verhouding is met het CreativeWork object, dus welk predicaat gebruikt wordt
 # daarna komt de term en daarna de uri
@@ -25,7 +26,17 @@ DEFINED_TERM_FIELD_MAPPING = {
     oai_xpaths.PRODUCTION_PLACE: [SDO.locationCreated, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
     # techniek heeft geen eigen eigenschap in het NDE/CN-profiel: als aanvullend type (met AAT-URI als sameAs)
     oai_xpaths.TECHNIQUE_ITEM: [SDO.additionalType, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
+    # objectnaam (schilderij, ets, ...) met de Getty AAT-URI als sameAs. Het NDE-profiel noemt voor additionalType
+    # juist "types uit andere vocabulaires dan Schema.org, zoals Getty AAT". De tekst blijft ook in alternateName staan.
+    oai_xpaths.OBJECT_NAME_TERM_ITEM: [SDO.additionalType, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
 }
+
+# Verwijzingen naar elders, rechtstreeks als IRI bij het werk (niet in het NDE/CN-profiel genoemd; de keuze van het predicaat staat hier)
+LINK_MAPPING = {
+    oai_xpaths.DIGITAL_REFERENCE: SDO.sameAs,            # hetzelfde object, beschreven elders (RKDimages, Collectie Nederland, handle)
+    oai_xpaths.RESTITUTION_REFERENCE: SDO.subjectOf,     # advies van de Restitutiecommissie over dit object
+}
+RELATED_OBJECT_PREDICATE = SDO.isRelatedTo               # gerelateerd object, adres via objectnummer (beeldbank)
 
 # mapping voor velden die als property-value toegevoegd worden 
 # PropertyValue mapping: map field a: [b, c] to SDO.value [a], predicate [b], SDO.propertyID [c], SDO.description [d], 
