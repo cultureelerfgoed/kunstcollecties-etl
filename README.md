@@ -18,6 +18,13 @@ Deze ETL bestaat uit de volgende onderdelen:
 - Rechten voor afbeeldingen op Memorix basis van AdlibXML
 - Limieten Github Actions en Triply API.
 
+## Controles tijdens de run
+- De oogst vergelijkt het aantal opgehaalde records met `completeListSize` van de bron. Wijkt het af, dan faalt de run en wordt er niet gepubliceerd.
+- Alle chunks worden weggeschreven, ook de laatste (kleinere) chunk.
+- Records die niet getransformeerd kunnen worden worden geteld (`MAX_RECORD_ERRORS` in `config/config.yml`).
+- Naast de `.jsonld` bestanden schrijft de run `manifest.json` met de aantallen.
+- Alle knopen hebben een vast adres (afgeleid van priref/positie/naam), zodat een tweede run dezelfde adressen oplevert.
+
 ## Sequentiediagram
 ```mermaid
 sequenceDiagram;

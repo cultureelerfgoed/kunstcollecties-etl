@@ -65,7 +65,8 @@ def safe_open_url(req: urllib.request.Request, retries: int = 3, backoff: float 
     last_err = None
     for attempt in range(retries):
         try:
-            with urllib.request.urlopen(req) as resp:
+            # timeout: zonder timeout kan een hangende verbinding de hele GitHub Action blokkeren
+            with urllib.request.urlopen(req, timeout=120) as resp:
                 status = getattr(resp, "status", 200)
                 headers = {k: v for k, v in resp.headers.items()}
                 ct = headers.get("Content-Type", "")
@@ -164,7 +165,7 @@ def harvest(target_graph: Graph, base_url: str, metadata_prefix: Optional[str], 
         "Accept": "application/xml, text/xml;q=0.9, */*;q=0.1",
         "Accept-Encoding": "identity, gzip, deflate",
     }
-    st_items = len(list(target_graph.subjects(RDF.type, SDO.ArchiveComponent)))
+    st_items = len(list(target_graph.subjects(RDF.type, SDO.CreativeWork)))
 
     params = {"verb": verb}
     if metadata_prefix:
@@ -201,18 +202,37 @@ def harvest(target_graph: Graph, base_url: str, metadata_prefix: Optional[str], 
 
             # Selecteer items
             if verb == "ListRecords":
-                elements = root.findall(".//oai:metadata/oai:record", NS)
- 
-                for element in elements:
+                # Loop over de OAI-records (header + metadata), niet alleen over de metadata:
+                # de header bevat de datestamp (-> schema:sdDatePublished) en de status (deleted).
+                for oai_record in root.findall("oai:ListRecords/oai:record", NS):
+                    state['seen'] = state.get('seen', 0) + 1
+                    header = oai_record.find("oai:header", NS)
+                    datestamp = None
+                    if header is not None:
+                        ds = header.find("oai:datestamp", NS)
+                        datestamp = ds.text.strip() if ds is not None and ds.text else None
+                        if header.get('status') == 'deleted':
+                            state['skipped'] = state.get('skipped', 0) + 1
+                            continue
+                    element = oai_record.find("oai:metadata/oai:record", NS)
+                    if element is None:
+                        state['skipped'] = state.get('skipped', 0) + 1
+                        logger.warning('OAI-record zonder metadata overgeslagen: %s', header.findtext("oai:identifier", "?", NS) if header is not None else '?')
+                        continue
                     try:
-                        transform_service.parse_tree_to_graph(target_graph, element, mapping, xpath, 'ns0', 'http://www.openarchives.org/OAI/2.0/')
-                    except (AssertionError, TypeError, Exception) as te:
-                        logger.warning('Error during transformation: %s', str(traceback.format_exception(te)))
+                        transform_service.parse_tree_to_graph(target_graph, element, mapping, xpath,
+                                                              'ns0', 'http://www.openarchives.org/OAI/2.0/', datestamp=datestamp)
+                    except Exception as te:
+                        # Niet meer stilzwijgend doorgaan: tel de fout, bewaar het priref; de run beoordeelt het totaal.
+                        state['errors'] = state.get('errors', 0) + 1
+                        state.setdefault('error_ids', []).append(element.get('priref', '?'))
+                        logger.warning('Error during transformation of priref %s: %s', element.get('priref', '?'), str(traceback.format_exception(te)))
 
             # Volgende pagina
             rt_el = root.find(".//oai:resumptionToken", NS)
-            # maybe get oai:completeListSize?
             rt = rt_el.text.strip() if rt_el is not None and rt_el.text else ""
+            if rt_el is not None and rt_el.get('completeListSize'):
+                state['complete_list_size'] = int(rt_el.get('completeListSize'))
             
             logger.debug(f"{len(list(target_graph.subjects(RDF.type, SDO.CreativeWork)))} items in graph. ResumptionToken {'aanwezig' if rt else 'ontbreekt'}.")
 

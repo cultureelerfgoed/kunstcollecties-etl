@@ -18,7 +18,42 @@ MODIFIED_ON_OR_AFTER = datetime.strptime(os.getenv('MODIFIED_ON_OR_AFTER', '1970
 config = yaml.safe_load(open(CONFIG_PATH))
 logger = logging.getLogger(__name__)
 
-def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any, ns_pfx=None, ns=None) -> Graph:
+ISO_DATE = re.compile(r'^-?\d{4}(-\d{2}(-\d{2})?)?$')
+
+
+def _normalize_year(value: Optional[str]) -> str:
+    """'550' -> '0550': jaartallen zonder voorloopnullen zijn geen geldige ISO-8601 (en niet als jaar te lezen)."""
+    value = (value or '').strip()
+    return value.zfill(4) if value.isdigit() else value
+
+
+def creation_dates(start: Optional[str], end: Optional[str]) -> dict:
+    """Begin- en einddatum uit Adlib -> {'dateCreated': ..., 'temporal': ...}.
+
+    CN-profiel: een enkele ISO-datum (JJJJ, JJJJ-MM, JJJJ-MM-DD) hoort in schema:dateCreated (maximaal één waarde),
+    een periode in schema:temporal als ISO-interval '1888/1948'. temporal blijft altijd gevuld (zoals voorheen),
+    zodat lezers van de Linked Data niets missen. Voorheen werd alleen de einddatum overgenomen en dateCreated
+    nooit gevuld.
+    """
+    start, end = _normalize_year(start), _normalize_year(end)
+    if not start and not end:
+        return {'dateCreated': None, 'temporal': None}
+    if not start or not end or start == end:
+        value = end or start
+    else:
+        value = f'{start}/{end}'
+    # dateCreated alleen voor een enkele ISO-datum: de SHACL van het CN-profiel staat daar geen interval toe
+    # (het NDE-profiel 1.10 wel). Perioden staan in temporal.
+    return {'dateCreated': value if ISO_DATE.match(value) else None, 'temporal': value}
+
+
+def _qualify(target_xpath: str, ns_pfx: str) -> str:
+    """'.//Production/creator/name' -> './/ns0:Production/ns0:creator/ns0:name'. Per padsegment, niet met str.replace
+    (dat kon segmenten die in elkaar voorkomen onbedoeld meepakken)."""
+    return '/'.join(seg if seg in ('', '.', '..') else f'{ns_pfx}:{seg}' for seg in target_xpath.split('/'))
+
+
+def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any, ns_pfx=None, ns=None, datestamp: Optional[str] = None) -> Graph:
     """ This function takes a Graph and an XML tree and parses the tree into the graph """
 
     # Adlib record priref unique identifier
@@ -52,7 +87,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
     for key, ref in mapping.PROPERTY_VALUE_MAPPING.items():
         item_text = get_text_from_tree(tree, key, ns_pfx, ns)
         if item_text:
-            property_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], str(uuid.uuid4()), SDO.PropertyValue)
+            property_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], f'{priref}/{key}', SDO.PropertyValue)
             target_graph.add((property_node, RDF.type, SDO.PropertyValue))
             target_graph.add((property_node, SDO.value, Literal(item_text, datatype=XSD.string)))
             target_graph.add((property_node, SDO.propertyID, ref[1]))
@@ -65,23 +100,69 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
     # add defined terms
     process_defined_terms(target_graph, tree, record_object_node, mapping.DEFINED_TERM_FIELD_MAPPING, mapping.DEFINED_TERM_TYPES, ns_pfx, ns)
 
-    # add creator, creators are always persons in version 0.1 of datamodel
-    creator_priref = get_text_from_tree(tree, oai_xpaths.CREATOR_PRIREF, ns_pfx, ns) or str(uuid.uuid4())
-    sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], creator_priref, SDO.Person)
-    target_graph.add((sdo_creator_node, RDF.type, SDO.Person))
-    target_graph.add((record_object_node, SDO.creator, sdo_creator_node))
-    
-    for key, ref in mapping.CREATOR_MAPPING.items():
-        item_text = get_text_from_tree(tree, ref[0], ns_pfx, ns)
-        if item_text:
-            if ref[1] == URIRef and uritools.is_valid_uri(item_text):
-                target_graph.add((sdo_creator_node, key, ref[1](item_text.strip())))
-            elif ref[1] == Literal and ref[2]:
-                target_graph.add((sdo_creator_node, key, ref[1](item_text.strip(), datatype=ref[2])))
-            elif ref[1] == Literal:
-                target_graph.add((sdo_creator_node, key, ref[1](item_text.strip())))
-    
-    process_defined_terms(target_graph, tree, sdo_creator_node, mapping.CREATOR_DEFINED_TERM_MAPPING, mapping.CREATOR_DEFINED_TERM_TYPES, ns_pfx, ns)
+    # datering: dateCreated (ISO-datum) en/of temporal (ook perioden), uit begin- en einddatum
+    dates = creation_dates(get_text_from_tree(tree, xpath.PRODUCTION_DATE_START, ns_pfx, ns),
+                           get_text_from_tree(tree, xpath.PRODUCTION_DATE_END, ns_pfx, ns))
+    if dates['dateCreated']:
+        target_graph.add((record_object_node, SDO.dateCreated, Literal(dates['dateCreated'], datatype=XSD.string)))
+    if dates['temporal']:
+        target_graph.add((record_object_node, SDO.temporal, Literal(dates['temporal'], lang='nl')))
+
+    # opschriften en signaturen -> schema:text (NDE-profiel: getranscribeerde tekst op het object)
+    for ins in findall_ns_wrapper(tree, xpath.INSCRIPTION_DESCRIPTION, ns_pfx, ns):
+        if ins.text and ins.text.strip():
+            target_graph.add((record_object_node, SDO.text, Literal(ins.text.strip(), lang='nl')))
+
+    # datum waarop het record in de bron voor het laatst is gewijzigd (verplicht in het CN-profiel)
+    if datestamp:
+        target_graph.add((record_object_node, SDO.sdDatePublished, Literal(datestamp[:10], datatype=XSD.date)))
+
+    # add creators: één Person per Production-groep. Een record kan meerdere makers hebben; elke maker neemt
+    # alleen de gegevens uit zijn eigen groep mee (voorheen: find() over het hele record, dus alleen de eerste
+    # maker, en rol/datums/RKD van latere makers werden aan die eerste maker gehangen).
+    for index, group in enumerate(findall_ns_wrapper(tree, xpath.PRODUCTION, ns_pfx, ns)):
+        creator_name = get_text_from_tree(group, xpath.GROUP_CREATOR_NAME, ns_pfx, ns)
+        if not creator_name or not creator_name.strip():
+            continue  # groep zonder maker: geen (naamloze, willekeurige) Person aanmaken
+        creator_priref = get_text_from_tree(group, xpath.GROUP_CREATOR_PRIREF, ns_pfx, ns)
+        # Vaste sleutel: zelfde priref -> zelfde adres; zonder priref afgeleid van record en positie (nooit willekeurig)
+        creator_key = creator_priref.strip() if creator_priref else f'{priref}/creator/{index}'
+        sdo_creator_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], creator_key, SDO.Person)
+        target_graph.add((sdo_creator_node, RDF.type, SDO.Person))
+        target_graph.add((record_object_node, SDO.creator, sdo_creator_node))
+
+        for key, ref in mapping.CREATOR_MAPPING.items():
+            item_text = get_text_from_tree(group, ref[0], ns_pfx, ns)
+            if item_text and item_text.strip():
+                if ref[1] == URIRef and uritools.is_valid_uri(item_text.strip()):
+                    target_graph.add((sdo_creator_node, key, ref[1](item_text.strip())))
+                elif ref[1] == Literal and ref[2]:
+                    target_graph.add((sdo_creator_node, key, ref[1](item_text.strip(), datatype=ref[2])))
+                elif ref[1] == Literal:
+                    target_graph.add((sdo_creator_node, key, ref[1](item_text.strip())))
+
+        process_defined_terms(target_graph, group, sdo_creator_node, mapping.CREATOR_DEFINED_TERM_MAPPING, mapping.CREATOR_DEFINED_TERM_TYPES, ns_pfx, ns)
+
+    # thema's -> schema:about
+    for about_path in mapping.ABOUT_TERM_PATHS:
+        for about_el in findall_ns_wrapper(tree, about_path, ns_pfx, ns):
+            about_name = (about_el.text or '').strip()
+            if about_name:
+                about_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], about_name, SDO.DefinedTerm)
+                target_graph.add((about_node, RDF.type, SDO.DefinedTerm))
+                target_graph.add((about_node, SDO.name, Literal(about_name, datatype=XSD.string)))
+                target_graph.add((record_object_node, SDO.about, about_node))
+
+    # overige nummers (inventarisnummer, plaatsingsnummer, ...) -> identifier (PropertyValue, zoals object_number)
+    for index, alt in enumerate(findall_ns_wrapper(tree, xpath.ALTERNATIVE_NUMBER, ns_pfx, ns)):
+        alt_value = get_text_from_tree(alt, xpath.ALTERNATIVE_NUMBER_VALUE, ns_pfx, ns)
+        if alt_value and alt_value.strip():
+            alt_type = get_text_from_tree(alt, xpath.ALTERNATIVE_NUMBER_TYPE, ns_pfx, ns)
+            alt_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], f'{priref}/alternative_number/{index}', SDO.PropertyValue)
+            target_graph.add((alt_node, RDF.type, SDO.PropertyValue))
+            target_graph.add((alt_node, SDO.value, Literal(alt_value.strip(), datatype=XSD.string)))
+            target_graph.add((alt_node, SDO.description, Literal((alt_type or 'alternative_number').strip(), datatype=XSD.string)))
+            target_graph.add((record_object_node, SDO.identifier, alt_node))
 
     # Link to image of object at memorix based on reproduction reference
     repro_list = findall_ns_wrapper(tree, mapping.MEDIAOBJECT_MAPPING[SDO.contentUrl], ns_pfx, ns)
@@ -100,8 +181,8 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
 
     # Dimensions
     qv_list = findall_ns_wrapper(tree, xpath.DIMENSION, ns_pfx, ns)
-    for qv_dimension in qv_list:
-        qv_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], str(uuid.uuid4()), SDO.QuantitativeValue)
+    for qv_index, qv_dimension in enumerate(qv_list):
+        qv_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], f'{priref}/dimension/{qv_index}', SDO.QuantitativeValue)
         
         try:
             d_unit = get_text_from_tree(qv_dimension, xpath.DIMENSION_UNIT, ns_pfx, ns)
@@ -126,7 +207,8 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
     # rightsholder
     rholder_text = get_text_from_tree(tree, xpath.RIGHTS_HOLDER, ns_pfx, ns)
     if rholder_text:
-        sdo_rholder_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], str(uuid.uuid4()), SDO.Person)
+        # gedeeld per naam (zoals termen), maar los van makers die op priref worden geadresseerd
+        sdo_rholder_node = uritools.get_object_uri(config['BASE_URI'], config['COLLECTION_ID'], f'rightsholder/{rholder_text.strip()}', SDO.Person)
         target_graph.add((sdo_rholder_node, RDF.type, SDO.Person))
         target_graph.add((sdo_rholder_node, SDO.name, Literal(rholder_text, datatype=XSD.string)))
         target_graph.add((record_object_node, SDO.copyrightHolder, sdo_rholder_node))
@@ -135,10 +217,7 @@ def parse_tree_to_graph(target_graph: Graph, tree: Any, mapping: Any, xpath: Any
     
 def get_text_from_tree(tree: (ET.ElementTree | ET.Element), target_xpath: str, ns_pfx: Optional[str], ns: Optional[str]) -> Optional[str]:
     if ns_pfx and ns:
-        xp_segms = re.split(r'\.//|\./|/', target_xpath)[1:]
-        for segment in xp_segms:
-            target_xpath = target_xpath.replace(segment, f'{ns_pfx}:{segment}')
-        t_elem = tree.find(target_xpath, namespaces={ns_pfx:ns})
+        t_elem = tree.find(_qualify(target_xpath, ns_pfx), namespaces={ns_pfx:ns})
     else:
         t_elem = tree.find(target_xpath)
     if t_elem is not None and t_elem.text:
@@ -146,10 +225,7 @@ def get_text_from_tree(tree: (ET.ElementTree | ET.Element), target_xpath: str, n
     
 def findall_ns_wrapper(tree: (ET.ElementTree | ET.Element), target_xpath: str, ns_pfx: Optional[str], ns: Optional[str]) -> Optional[list[ET.Element]]:
     if ns_pfx and ns:
-        xp_segms = re.split(r'\.//|\./|/', target_xpath)[1:]
-        for segment in xp_segms:
-            target_xpath = target_xpath.replace(segment, f'{ns_pfx}:{segment}')
-        t_elems = tree.findall(target_xpath, namespaces={ns_pfx:ns})
+        t_elems = tree.findall(_qualify(target_xpath, ns_pfx), namespaces={ns_pfx:ns})
     else:
         t_elems = tree.findall(target_xpath)
     return t_elems
