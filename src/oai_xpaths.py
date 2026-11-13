@@ -54,6 +54,30 @@ CREATOR_ROLE = './/creator.role'
 RKDARTISTS = './/Production/creator/Source/source.number'
 
 
+# Binnen één Production-groep (paden relatief aan het Production-element). In Adlib staat elke maker in een eigen
+# Production-groep; rol, geboortedatum en sterfdatum staan naast de maker in diezelfde groep.
+GROUP_CREATOR = './creator'
+GROUP_CREATOR_PRIREF = './creator/priref'
+GROUP_CREATOR_NAME = './creator/name'
+GROUP_CREATOR_BIRTHPLACE = './creator/birth.place'
+GROUP_CREATOR_RKD = './creator/Source/source.number'
+GROUP_CREATOR_DATE_OF_BIRTH = './creator.date_of_birth'
+GROUP_CREATOR_DATE_OF_DEATH = './creator.date_of_death'
+GROUP_CREATOR_ROLE = './creator.role'
+
+ALTERNATIVE_NUMBER = './/Alternative_number'
+ALTERNATIVE_NUMBER_VALUE = './alternative_number'
+ALTERNATIVE_NUMBER_TYPE = './alternative_number.type'
+
+# Thema's: alleen de benoemde term, niet de bijbehorende vrije toelichting
+THEMA_TERMS = [
+    './/Thema/content.motif.general',
+    './/Thema/content.motif.specific',
+    './/Thema_wat/theme.subject.what',
+    './/Thema_wie/content.person.name',
+    './/Thema_waar/theme.subject.where',
+]
+
 PRODUCTION = './/Production'
 PRODUCTION_NOTES = './/production.notes'
 PRODUCTION_PLACE = './/production.place'
@@ -86,6 +110,7 @@ NUMBER_OF_PARTS = './/number_of_parts'
 OBJECT_CATEGORY = './/object_category'
 OBJECT_CATEGORY_TERM = './/object_category/term'
 OBJECT_CATEGORY_SRC_URI = './/object_category/Source/source.number'
+TECHNIQUE_ITEM = './/Technique/technique'
 TECHNIQUE = './/Technique/technique/term'
 TECHNIQUE_URI = './/Technique/technique/Source/source.number'
 

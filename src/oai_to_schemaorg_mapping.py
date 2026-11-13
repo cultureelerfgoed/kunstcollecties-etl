@@ -14,6 +14,7 @@ DEFINED_TERM_TYPES = {
     oai_xpaths.OBJECT_CATEGORY: [SDO.DefinedTerm],
     oai_xpaths.ASSOCIATION_SUBJECT: [SDO.DefinedTerm],
     oai_xpaths.PRODUCTION_PLACE: [SDO.Place, SDO.DefinedTerm],
+    oai_xpaths.TECHNIQUE_ITEM: [SDO.DefinedTerm],
 }
 # in DEFINED_TERM_FIELD_MAPPING is opgenomen wat de verhouding is met het CreativeWork object, dus welk predicaat gebruikt wordt
 # daarna komt de term en daarna de uri
@@ -22,7 +23,9 @@ DEFINED_TERM_FIELD_MAPPING = {
     oai_xpaths.OBJECT_CATEGORY: [SDO.genre, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
     oai_xpaths.ASSOCIATION_SUBJECT: [SDO.additionalType, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
     oai_xpaths.PRODUCTION_PLACE: [SDO.locationCreated, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
-} 
+    # techniek heeft geen eigen eigenschap in het NDE/CN-profiel: als aanvullend type (met AAT-URI als sameAs)
+    oai_xpaths.TECHNIQUE_ITEM: [SDO.additionalType, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
+}
 
 # mapping voor velden die als property-value toegevoegd worden 
 # PropertyValue mapping: map field a: [b, c] to SDO.value [a], predicate [b], SDO.propertyID [c], SDO.description [d], 
@@ -36,13 +39,14 @@ RIGHTS_MAPPING = {
 }
 
 CREATOR_DEFINED_TERM_TYPES = {
-    oai_xpaths.CREATOR_ROLE: [SDO.Occupation, SDO.DefinedTerm],
-    oai_xpaths.CREATOR_BIRTHPLACE: [SDO.Place, SDO.DefinedTerm],
+    oai_xpaths.GROUP_CREATOR_ROLE: [SDO.Occupation, SDO.DefinedTerm],
+    oai_xpaths.GROUP_CREATOR_BIRTHPLACE: [SDO.Place, SDO.DefinedTerm],
 }
 
 CREATOR_DEFINED_TERM_MAPPING = {
-    oai_xpaths.CREATOR_ROLE: [SDO.hasOccupation, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
-    oai_xpaths.CREATOR_BIRTHPLACE: [SDO.birthPlace, None, oai_xpaths.TERM_URI],
+    oai_xpaths.GROUP_CREATOR_ROLE: [SDO.hasOccupation, oai_xpaths.TERM_NAME, oai_xpaths.TERM_URI],
+    # birth.place is een tekstveld zonder Source: de naam staat op het element zelf
+    oai_xpaths.GROUP_CREATOR_BIRTHPLACE: [SDO.birthPlace, None, oai_xpaths.TERM_URI],
 }
 
 # mapping voor simpele afmetingen
@@ -74,16 +78,20 @@ CREATIVEWORK_MAPPING = {
     SDO.name: oai_xpaths.TITLE_TEXT,
     SDO.sdPublisher: oai_xpaths.INSTITUTION_NAME,
     SDO.alternateName: oai_xpaths.OBJECT_NAME_ITEM,
-    SDO.temporal: oai_xpaths.PRODUCTION_DATE_END,
+    # datering (dateCreated/temporal) wordt in transform_service.creation_dates() uit begin- en einddatum afgeleid
     SDO.copyrightNotice: oai_xpaths.RIGHTS_TYPE,
     SDO.description: oai_xpaths.DESCRIPTION_TEXT,
     SDO.size: oai_xpaths.DIMENSION_FREE,
 }
 
-# mapping voor attributen mbt maker
+# mapping voor attributen mbt maker. Paden zijn relatief aan één Production-groep (zie oai_xpaths.GROUP_*),
+# zodat elke maker zijn eigen rol, datums, plaats en RKD-koppeling krijgt.
 CREATOR_MAPPING = {
-    SDO.name: [oai_xpaths.CREATOR_NAME, Literal, XSD.string],
-    SDO.sameAs: [oai_xpaths.RKDARTISTS, URIRef, XSD.anyURI],
-    SDO.deathDate: [oai_xpaths.CREATOR_DATE_OF_DEATH, Literal, XSD.string],
-    SDO.birthDate: [oai_xpaths.CREATOR_DATE_OF_BIRTH, Literal, XSD.string],
+    SDO.name: [oai_xpaths.GROUP_CREATOR_NAME, Literal, XSD.string],
+    SDO.sameAs: [oai_xpaths.GROUP_CREATOR_RKD, URIRef, XSD.anyURI],
+    SDO.deathDate: [oai_xpaths.GROUP_CREATOR_DATE_OF_DEATH, Literal, XSD.string],
+    SDO.birthDate: [oai_xpaths.GROUP_CREATOR_DATE_OF_BIRTH, Literal, XSD.string],
 }
+
+# Thema's -> schema:about (DefinedTerm, alleen naam; de bron heeft er geen URI bij)
+ABOUT_TERM_PATHS = oai_xpaths.THEMA_TERMS
