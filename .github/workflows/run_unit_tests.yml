@@ -1,4 +1,4 @@
-name: 'Run unit tests for pull-requests and push' 
+name: 'Run unit tests check' 
 
 on:
   pull_request: 
@@ -7,7 +7,6 @@ on:
   push: 
     branches:
       - dev
-      - main   
 
 jobs:
   run-unit-tests:
